@@ -1,0 +1,373 @@
+/* --- Import Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap');
+
+/* --- START: Color Variables --- */
+:root {
+    --body-gradient-1: #e0eafc;
+    --body-gradient-2: #cfdef3;
+    --body-gradient-3: #a1c4fd;
+    --body-gradient-4: #c2e9fb;
+    --body-gradient-5: #f6cfbe;
+    --body-gradient-6: #ffdee9;
+    --body-text-color: #212529;
+    --container-bg: rgba(255, 255, 255, 0.98);
+    --container-border: rgba(0, 0, 0, 0.05);
+    --container-shadow-1: rgba(0, 0, 0, 0.08);
+    --container-shadow-2: rgba(0, 0, 0, 0.05);
+    --container-shadow-hover-1: rgba(0, 0, 0, 0.1);
+    --container-shadow-hover-2: rgba(0, 0, 0, 0.07);
+    --controls-bg: #fdfdff;
+    --controls-border: #eef2f7;
+    --controls-label-color: #343a40;
+    --editor-bg: #f8f9fc;
+    --editor-border: #dbe4f0;
+    --editor-text: #495057; /* Added for editor text */
+    --button-bg-1: #0d6efd;
+    --button-bg-2: #0a58ca;
+    --button-hover-1: #0b5ed7;
+    --button-hover-2: #084aa3;
+    --button-shadow: rgba(13, 110, 253, 0.3);
+    --button-shadow-hover: rgba(13, 110, 253, 0.4);
+    --button-shadow-active: rgba(13, 110, 253, 0.2);
+    --output-bg: #f8f9fc;
+    --output-border: #dbe4f0;
+    --output-text: #495057;
+    --svg-container-bg: #ffffff;
+    --svg-container-border: #eef2f7;
+    --svg-bg: #ffffff; /* SVG background itself */
+    --component-fill: #f8f9fa;
+    --component-stroke: #adb5bd;
+    --alu-mux-fill: #f1f3f5; /* Combined ALU and MUX */
+    --control-unit-stroke: #0d6efd;
+    --wire-black-stroke: #6c757d;
+    --wire-blue-stroke: #198754; /* Kept green for control */
+    --label-fill: #343a40;
+    --label-small-fill: #6c757d;
+    --control-label-fill: #198754; /* Kept green */
+    --gate-fill: #d1e7dd;
+    --gate-stroke: #198754;
+    --data-dot-fill: #d63384;
+    --control-dot-fill: #198754; /* Kept green */
+    --highlight-stroke: #fd7e14;
+    --highlight-fill: rgba(255, 235, 214, 0.75);
+    --overlay-button-bg: rgba(248, 249, 250, 0.8);
+    --overlay-button-border: rgba(206, 212, 218, 0.7);
+    --overlay-button-text: #495057;
+    --overlay-button-hover-bg: rgba(233, 236, 239, 0.9);
+}
+
+body.dark-theme {
+    --body-gradient-1: #1a1a2e;
+    --body-gradient-2: #16213e;
+    --body-gradient-3: #0f3460;
+    --body-gradient-4: #2c3e50;
+    --body-gradient-5: #3a4750;
+    --body-gradient-6: #4f4a45;
+    --body-text-color: #e0e0e0;
+    --container-bg: rgba(40, 42, 54, 0.98); /* Dracula-like */
+    --container-border: rgba(70, 70, 90, 0.5);
+    --container-shadow-1: rgba(0, 0, 0, 0.2);
+    --container-shadow-2: rgba(0, 0, 0, 0.15);
+    --container-shadow-hover-1: rgba(0, 0, 0, 0.3);
+    --container-shadow-hover-2: rgba(0, 0, 0, 0.2);
+    --controls-bg: #282a36; /* Dracula bg */
+    --controls-border: #44475a; /* Dracula comment */
+    --controls-label-color: #f8f8f2; /* Dracula foreground */
+    --editor-bg: #21222c; /* Dracula darker */
+    --editor-border: #44475a;
+    --editor-text: #bd93f9; /* Dracula purple for code */
+    --button-bg-1: #50fa7b; /* Dracula green */
+    --button-bg-2: #44c767;
+    --button-hover-1: #5af78e;
+    --button-hover-2: #4edc7a;
+    --button-shadow: rgba(80, 250, 123, 0.3);
+    --button-shadow-hover: rgba(80, 250, 123, 0.4);
+    --button-shadow-active: rgba(80, 250, 123, 0.2);
+    --output-bg: #21222c;
+    --output-border: #44475a;
+    --output-text: #f1fa8c; /* Dracula yellow */
+    --svg-container-bg: #282a36;
+    --svg-container-border: #44475a;
+    --svg-bg: #21222c; /* SVG background */
+    --component-fill: #44475a; /* Dracula comment */
+    --component-stroke: #6272a4; /* Dracula selection */
+    --alu-mux-fill: #4a4e69; /* Slightly different gray */
+    --control-unit-stroke: #ff79c6; /* Dracula pink */
+    --wire-black-stroke: #9a9a9a; /* Lighter gray */
+    --wire-blue-stroke: #8be9fd; /* Dracula cyan */
+    --label-fill: #f8f8f2;
+    --label-small-fill: #b0b0b0; /* Lighter gray */
+    --control-label-fill: #8be9fd; /* Cyan */
+    --gate-fill: #4e6e58; /* Darker green */
+    --gate-stroke: #50fa7b; /* Green */
+    --data-dot-fill: #ff79c6; /* Pink */
+    --control-dot-fill: #8be9fd; /* Cyan */
+    --highlight-stroke: #ffb86c; /* Dracula orange */
+    --highlight-fill: rgba(255, 184, 108, 0.5);
+    --overlay-button-bg: rgba(68, 71, 90, 0.8); /* Dracula comment bg */
+    --overlay-button-border: rgba(98, 114, 164, 0.7); /* Dracula selection */
+    --overlay-button-text: #f8f8f2; /* Dracula fg */
+    --overlay-button-hover-bg: rgba(98, 114, 164, 0.9); /* Dracula selection */
+}
+/* --- END: Color Variables --- */
+
+
+body {
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    display: flex;
+    /* **** THAY ĐỔI **** */
+    flex-direction: column; /* Xếp các phần tử con theo chiều dọc */
+    align-items: center;   /* Căn giữa các phần tử con theo chiều ngang */
+    /* justify-content: center; /* Bỏ hoặc sửa đổi cái này nếu cần */
+    /* **** KẾT THÚC THAY ĐỔI **** */
+    min-height: 100vh; /* Giữ lại để đảm bảo body chiếm ít nhất toàn màn hình */
+    margin: 0;
+    padding: 25px;
+    box-sizing: border-box;
+
+    /* Use CSS Variables for background */
+    background: linear-gradient(-45deg,
+        var(--body-gradient-1), var(--body-gradient-2), var(--body-gradient-3),
+        var(--body-gradient-4), var(--body-gradient-5), var(--body-gradient-6)
+    );
+    background-size: 600% 600%;
+    animation: gradientShift 25s ease infinite;
+    color: var(--body-text-color); /* Use variable */
+    overflow-x: hidden; /* Chỉ ẩn thanh cuộn ngang nếu cần */
+    /* overflow: hidden; Có thể gây vấn đề nếu nội dung dài hơn màn hình */
+    transition: background 0.5s ease, color 0.5s ease; /* Smooth theme transition */
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+#simulation-container {
+    display: flex;
+    width: 100%;
+    max-width: 1500px;
+    gap: 30px;
+    align-items: stretch;
+    height: calc(100vh - 50px);
+    background-color: var(--container-bg); /* Use variable */
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 12px 35px var(--container-shadow-1), /* Use variable */
+                0 2px 10px var(--container-shadow-2); /* Use variable */
+    border: 1px solid var(--container-border); /* Use variable */
+    transition: box-shadow 0.3s ease-in-out, background-color 0.5s ease, border-color 0.5s ease; /* Add transitions */
+}
+
+#simulation-container:hover {
+     box-shadow: 0 18px 45px var(--container-shadow-hover-1), /* Use variable */
+                 0 4px 15px var(--container-shadow-hover-2); /* Use variable */
+}
+
+#controls {
+    flex: 0 0 340px;
+    padding: 25px;
+    background-color: var(--controls-bg); /* Use variable */
+    border: 1px solid var(--controls-border); /* Use variable */
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    transition: background-color 0.5s ease, border-color 0.5s ease; /* Add transition */
+}
+
+#controls label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 15px;
+    color: var(--controls-label-color); /* Use variable */
+     transition: color 0.5s ease;
+}
+
+#instruction-editor {
+    width: 100%;
+    height: 200px;
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 14px;
+    border: 1px solid var(--editor-border); /* Use variable */
+    padding: 10px 12px;
+    box-sizing: border-box;
+    resize: vertical;
+    border-radius: 8px;
+    line-height: 1.5;
+    background-color: var(--editor-bg); /* Use variable */
+    color: var(--editor-text); /* Use variable */
+    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease; /* Add transition */
+}
+
+#simulate-button {
+    padding: 14px 20px;
+    /* Use variables for gradient */
+    background-image: linear-gradient(to right, var(--button-bg-1), var(--button-bg-2));
+    color: white; /* Keep white text for contrast on both light/dark */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    box-shadow: 0 3px 8px var(--button-shadow); /* Use variable */
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#simulate-button:hover {
+    /* Use variables for hover gradient */
+    background-image: linear-gradient(to right, var(--button-hover-1), var(--button-hover-2));
+    box-shadow: 0 5px 12px var(--button-shadow-hover); /* Use variable */
+    transform: translateY(-2px);
+}
+
+#simulate-button:active {
+    transform: translateY(0px);
+    box-shadow: 0 2px 5px var(--button-shadow-active); /* Use variable */
+}
+
+#json-output {
+    width: 100%;
+    flex-grow: 1;
+    min-height: 150px;
+    overflow-y: auto;
+    background-color: var(--output-bg); /* Use variable */
+    border: 1px solid var(--output-border); /* Use variable */
+    padding: 12px 15px;
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 12px;
+    white-space: pre;
+    box-sizing: border-box;
+    border-radius: 8px;
+    line-height: 1.4;
+    color: var(--output-text); /* Use variable */
+    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease; /* Add transition */
+}
+
+#svg-container {
+    flex: 1;
+    min-width: 0;
+    background-color: var(--svg-container-bg); /* Use variable */
+    border: 1px solid var(--svg-container-border); /* Use variable */
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    transition: background-color 0.5s ease, border-color 0.5s ease; /* Add transition */
+}
+
+#svg-container.dragging {
+    cursor: grabbing;
+}
+
+#svg-container svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--svg-bg); /* Use variable */
+    transform-origin: 0 0;
+    border: none;
+    transition: background-color 0.5s ease; /* Add transition */
+    /* Keep width/height from SVG tag */
+}
+
+/* --- START: Styles for Overlay Buttons --- */
+#svg-overlay-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10; /* Ensure buttons are above SVG */
+    display: flex;
+    gap: 8px;
+}
+
+#reset-zoom-button,
+#theme-toggle-button {
+    background-color: var(--overlay-button-bg);
+    border: 1px solid var(--overlay-button-border);
+    color: var(--overlay-button-text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px; /* Adjust icon size */
+    line-height: 1; /* Prevent extra vertical space */
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+#reset-zoom-button:hover,
+#theme-toggle-button:hover {
+    background-color: var(--overlay-button-hover-bg);
+}
+/* --- END: Styles for Overlay Buttons --- */
+
+
+/* --- SVG Styles using Variables --- */
+.component { fill: var(--component-fill); stroke: var(--component-stroke); stroke-width: 1.2; transition: fill 0.5s ease, stroke 0.5s ease; }
+.alu { fill: var(--alu-mux-fill); stroke: var(--component-stroke); stroke-width: 1.2; transition: fill 0.5s ease, stroke 0.5s ease; }
+.mux { fill: var(--alu-mux-fill); stroke: var(--component-stroke); stroke-width: 1.2; transition: fill 0.5s ease, stroke 0.5s ease; }
+.control-unit { fill: none; stroke: var(--control-unit-stroke); stroke-width: 1.8; transition: stroke 0.5s ease; }
+.wire-black { stroke: var(--wire-black-stroke); stroke-width: 1.4; fill: none; transition: stroke 0.5s ease; }
+.wire-blue { stroke: var(--wire-blue-stroke); stroke-width: 1.4; fill: none; transition: stroke 0.5s ease; } /* Control wire */
+
+.label, .label-small, .label-left, .label-right, .control-label {
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    fill: var(--label-fill); /* Use variable */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition: fill 0.5s ease;
+}
+.label { font-size: 10px; }
+.label-small { font-size: 8px; fill: var(--label-small-fill); } /* Use variable */
+.label-left { font-size: 9px; text-anchor: start; }
+.label-right { font-size: 9px; text-anchor: end; }
+.control-label { font-size: 9px; fill: var(--control-label-fill); text-anchor: start; } /* Use variable */
+
+.gate { fill: var(--gate-fill); stroke: var(--gate-stroke); stroke-width: 1.2; transition: fill 0.5s ease, stroke 0.5s ease;}
+
+.data-dot { fill: var(--data-dot-fill); r: 4; visibility: hidden; transition: fill 0.5s ease;}
+.control-dot { fill: var(--control-dot-fill); r: 4; visibility: hidden; transition: fill 0.5s ease;}
+
+.highlighted {
+    stroke: var(--highlight-stroke) !important; /* Use variable */
+    stroke-width: 2.8px !important;
+    fill: var(--highlight-fill) !important; /* Use variable */
+    /* Keep short transition for highlight effect itself */
+    transition: stroke 0.1s ease-in-out, fill 0.1s ease-in-out, stroke-width 0.1s ease-in-out;
+}
+
+/* --- START: Footer Styles --- */
+#page-footer {
+    width: 100%;
+    max-width: 1500px; /* **** THÊM: Giới hạn chiều rộng giống container chính **** */
+    text-align: center;
+    padding: 15px 0;
+    margin-top: 30px;
+    font-size: 0.85rem;
+    color: var(--label-small-fill);
+    border-top: 1px solid var(--container-border);
+    transition: color 0.5s ease, border-color 0.5s ease;
+    box-sizing: border-box; /* **** THÊM: Để padding không làm tăng chiều rộng **** */
+}
+
+#page-footer p {
+    margin: 0;
+}
+/* --- END: Footer Styles --- */
+
+#radial-highlight {
+    pointer-events: none; /* Đảm bảo không chặn tương tác chuột */
+    /* visibility: hidden; /* Đã đặt trong HTML, nhưng có thể đặt ở đây cũng được */
+    /* transition: opacity 0.2s ease-in-out; /* Tùy chọn: Thêm hiệu ứng fade nếu dùng opacity để hiện/ẩn */
+}
+
+/* --- END OF FILE sub_general.css --- */

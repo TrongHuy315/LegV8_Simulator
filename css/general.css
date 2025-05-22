@@ -1,0 +1,173 @@
+/* --- START OF FILE general.css --- */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* Font hệ thống hiện đại hơn */
+    display: flex;
+    justify-content: center; /* Căn giữa container theo chiều ngang */
+    align-items: center; /* Căn giữa container theo chiều dọc */
+    min-height: 100vh;
+    margin: 0;
+    padding: 25px; /* Thêm khoảng trống xung quanh container chính */
+    box-sizing: border-box;
+
+    /* --- HIỆU ỨNG NỀN GRADIENT CHUYỂN ĐỘNG --- */
+    background: linear-gradient(-45deg, #b8cbb8, #b8cbb8, #b465da, #cf6cc9, #ee609c, #ee609c); /* Màu sắc nhẹ nhàng hơn */
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease infinite; /* Thời gian chuyển động dài hơn */
+    color: #333; /* Màu chữ mặc định tối hơn một chút */
+}
+
+/* Keyframes cho animation gradient */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+#simulation-container {
+    display: flex;
+    width: 100%;
+    max-width: 1450px; /* Tăng chiều rộng tối đa một chút */
+    gap: 25px; /* Tăng khoảng cách giữa controls và svg */
+    align-items: flex-start; /* Align tops */
+
+    /* --- HIỆU ỨNG CHO CONTAINER CHÍNH --- */
+    background-color: rgba(255, 255, 255, 0.97); /* Nền trắng hơi trong suốt */
+    padding: 25px; /* Padding bên trong container */
+    border-radius: 15px; /* Bo góc nhiều hơn */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), /* Bóng đổ mềm mại */
+                0 1px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04); /* Viền rất mờ */
+    transition: box-shadow 0.3s ease-in-out; /* Hiệu ứng chuyển động khi hover */
+}
+
+/* Hiệu ứng nhẹ khi di chuột vào container */
+#simulation-container:hover {
+     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12),
+                 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+#controls {
+    flex: 0 0 320px; /* Tăng chiều rộng một chút */
+    padding: 20px;
+    background-color: #f8f9fa; /* Màu nền sáng hơn một chút */
+    border: 1px solid #e9ecef; /* Viền nhạt hơn */
+    border-radius: 10px; /* Bo góc đồng bộ */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#controls label {
+    font-weight: 600; /* Đậm hơn một chút */
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #495057;
+}
+
+#instruction-editor {
+    width: 100%;
+    height: 160px; /* Cao hơn một chút */
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Font code đẹp hơn */
+    font-size: 13px;
+    border: 1px solid #ced4da;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    resize: vertical; /* Allow vertical resize */
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+#simulate-button {
+    padding: 12px 18px;
+    background-image: linear-gradient(to right, #007bff, #0056b3); /* Gradient cho nút */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.25s ease; /* Chuyển động mượt hơn */
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
+    margin-top: 5px;
+}
+
+#simulate-button:hover {
+    background-image: linear-gradient(to right, #0069d9, #004ca3);
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+    transform: translateY(-1px); /* Hiệu ứng nhấc lên */
+}
+
+#simulate-button:active {
+    transform: translateY(0px);
+    box-shadow: 0 1px 3px rgba(0, 123, 255, 0.2);
+}
+
+#json-output {
+    width: 100%;
+    height: 200px; /* Cao hơn */
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    padding: 10px 12px;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 11px;
+    white-space: pre;
+    box-sizing: border-box;
+    border-radius: 6px;
+    line-height: 1.3;
+    color: #333;
+}
+
+#svg-container {
+    flex: 1; /* SVG takes remaining space */
+    min-width: 0; /* Prevent flex item from overflowing */
+    background-color: #ffffff; /* Nền trắng rõ ràng cho SVG */
+    border: 1px solid #e9ecef;
+    border-radius: 10px; /* Bo góc đồng bộ */
+    overflow: hidden; /* Đảm bảo SVG không tràn ra ngoài viền bo */
+}
+
+svg {
+    /* border: 1px solid #aaa; */ /* Không cần viền riêng cho SVG nữa */
+    border: none;
+    display: block; /* Prevents extra space below SVG */
+    max-width: 100%;
+    height: auto;
+    background-color: white; /* Đảm bảo nền SVG luôn trắng */
+}
+
+/* --- Kiểu SVG hiện có --- */
+.component { fill: #f1f3f5; stroke: #555; stroke-width: 1; } /* Màu nhạt hơn, viền mỏng hơn */
+.alu { fill: #f8f9fa; stroke: #555; stroke-width: 1; }
+.mux { fill: #f8f9fa; stroke: #555; stroke-width: 1; }
+.control-unit { fill: none; stroke: #007bff; stroke-width: 1.5; } /* Stroke mỏng hơn một chút */
+.wire-black { stroke: #495057; stroke-width: 1.2; fill: none; } /* Dây đen nhạt hơn, mỏng hơn */
+.wire-blue { stroke: #17a2b8; stroke-width: 1.2; fill: none; } /* Màu xanh khác, mỏng hơn */
+.label { font-size: 9px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; text-anchor: middle; dominant-baseline: middle; fill: #333; }
+.label-small { font-size: 7px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; text-anchor: middle; dominant-baseline: middle; fill: #555; }
+.label-left { font-size: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; text-anchor: start; dominant-baseline: middle; fill: #333; }
+.label-right { font-size: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; text-anchor: end; dominant-baseline: middle; fill: #333; }
+.control-label { font-size: 8px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; fill: #17a2b8; text-anchor: start; dominant-baseline: middle; }
+.gate { fill: #e0fbfc; stroke: #17a2b8; stroke-width: 1; } /* Màu gate sáng hơn */
+
+/* --- Kiểu chấm tròn Animation --- */
+.data-dot { fill: #dc3545; r: 3.5; visibility: hidden; } /* Màu đỏ khác, nhỏ hơn */
+.control-dot { fill: #17a2b8; r: 3.5; visibility: hidden; } /* Màu xanh control, nhỏ hơn */
+
+/* Kiểu highlight (Giữ nguyên hoặc tùy chỉnh nếu muốn) */
+.highlighted {
+    /* filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.8)); */
+    stroke: #e44d26 !important; /* Màu cam đỏ */
+    stroke-width: 2.5px !important; /* Mỏng hơn */
+    fill: rgba(253, 236, 231, 0.7) !important; /* Màu nền highlight nhạt hơn */
+    transition: stroke 0.1s ease-in-out, fill 0.1s ease-in-out, stroke-width 0.1s ease-in-out; /* Thêm transition nhẹ */
+}
+
+/* --- END OF FILE general.css --- */

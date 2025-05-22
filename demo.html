@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEGv8 Single-Cycle Datapath</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column; /* Stack controls above diagram */
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #simulation-container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px; /* Max width for layout */
+            gap: 15px;
+            align-items: flex-start; /* Align tops */
+        }
+        #controls {
+            flex: 0 0 300px; /* Fixed width for controls */
+            padding: 15px;
+            background-color: #e8e8e8;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #controls label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        #instruction-editor {
+            width: 100%;
+            height: 150px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-sizing: border-box;
+            resize: vertical; /* Allow vertical resize */
+        }
+        #simulate-button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        #simulate-button:hover {
+            background-color: #0056b3;
+        }
+        #json-output {
+            width: 100%;
+            height: 180px; /* Fixed height */
+            overflow-y: auto; /* Scroll if needed */
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            white-space: pre;
+            box-sizing: border-box;
+        }
+        #svg-container {
+            flex: 1; /* SVG takes remaining space */
+            min-width: 0; /* Prevent flex item from overflowing */
+        }
+        svg {
+            border: 1px solid #aaa;
+            background-color: white;
+            display: block; /* Prevents extra space below SVG */
+            max-width: 100%;
+            height: auto;
+        }
+        /* --- Existing SVG Styles --- */
+        .component { fill: #e8e8e8; stroke: black; stroke-width: 1.5; }
+        .alu { fill: #f5f5f5; stroke: black; stroke-width: 1.5; }
+        .mux { fill: #f5f5f5; stroke: black; stroke-width: 1.5; }
+        .control-unit { fill: none; stroke: #007bff; stroke-width: 2; }
+        .wire-black { stroke: black; stroke-width: 1.5; fill: none; }
+        .wire-blue { stroke: #007bff; stroke-width: 1.5; fill: none; }
+        .label { font-size: 10px; font-family: 'Courier New', Courier, monospace; text-anchor: middle; dominant-baseline: middle; fill: black; }
+        .label-small { font-size: 8px; font-family: 'Courier New', Courier, monospace; text-anchor: middle; dominant-baseline: middle; fill: black; }
+        .label-left { font-size: 9px; font-family: 'Courier New', Courier, monospace; text-anchor: start; dominant-baseline: middle; fill: black; }
+        .label-right { font-size: 9px; font-family: 'Courier New', Courier, monospace; text-anchor: end; dominant-baseline: middle; fill: black; }
+        .control-label { font-size: 9px; font-family: 'Courier New', Courier, monospace; fill: #007bff; text-anchor: start; dominant-baseline: middle; }
+        .gate { fill: #ccf; stroke: #007bff; stroke-width: 1; }
+
+        /* --- Animation Dot Style --- */
+        .data-dot { fill: black; r: 4; visibility: hidden; }
+        .control-dot { fill: #007bff; r: 4; visibility: hidden; }
+    </style>
+</head>
+<body>
+    <svg width="1000" height="650" viewBox="0 0 1000 650">
+        <defs>
+            <!-- Arrowhead marker definition -->
+            <marker id="arrow-black" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="6" markerHeight="6"
+                orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
+            </marker>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="6" markerHeight="6"
+                orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#007bff" />
+            </marker>
+        </defs>
+
+        <!-- Components -->
+
+        <!-- PC -->
+        <rect x="40" y="350" width="30" height="60" class="component"/>
+        <text x="55" y="380" class="label">PC</text>
+
+        <!-- Add 4 -->
+        <polygon points="170,70 230,90 230,130 170,150 170,120 180,110 170,100 170,70" class="alu" />
+        <text x="200" y="110" class="label">Add</text>
+        <text x="130" y="130" class="label-small">4</text>
+
+        <!-- Instruction Memory -->
+        <rect x="115" y="370" width="90" height="120" class="component"/>
+        <text x="160" y="470" class="label">Instruction</text>
+        <text x="160" y="480" class="label">memory</text>
+        <text x="120" y="380" class="label-left">Read</text>
+        <text x="120" y="390" class="label-left">address</text>
+        <text x="200" y="425" class="label-right">Instruction</text>
+        <text x="200" y="435" class="label-right">[31-0]</text>
+
+        <!-- Mux Reg Write Dest -->
+        <ellipse cx="340" cy="423" rx="15" ry="40" class="mux"/>
+        <text x="340" y="413" class="label">M</text>
+        <text x="340" y="423" class="label">u</text>
+        <text x="340" y="433" class="label">x</text>
+        <text x="340" y="403" class="label-small">0</text>
+        <text x="340" y="443" class="label-small">1</text>
+
+        <!-- Registers -->
+        <rect x="390" y="365" width="100" height="130" class="component"/>
+        <text x="485" y="485" class="label-right">Registers</text>
+        <text x="395" y="375" class="label-left">Read</text>
+        <text x="395" y="385" class="label-left">register 1</text>
+        <text x="395" y="415" class="label-left">Read</text>
+        <text x="395" y="425" class="label-left">register 2</text>
+        <text x="395" y="455" class="label-left">Write</text>
+        <text x="395" y="465" class="label-left">register</text>
+        <text x="395" y="480" class="label-left">Write</text>
+        <text x="395" y="490" class="label-left">data</text>
+        <text x="485" y="395" class="label-right">Read</text>
+        <text x="485" y="405" class="label-right">data 1</text>
+        <text x="485" y="435" class="label-right">Read</text>
+        <text x="485" y="445" class="label-right">data 2</text>
+
+        <!-- Sign Extend -->
+        <ellipse cx="440" cy="560" rx="20" ry="30" class="component"/>
+        <text x="440" y="555" class="label">Sign</text>
+        <text x="440" y="565" class="label">extend</text>
+        <text x="400" y="560" class="label-small">32</text>
+        <text x="480" y="560" class="label-small">64</text>
+
+        <!-- Mux ALU Src -->
+        <ellipse cx="560" cy="460" rx="15" ry="40" class="mux"/>
+        <text x="560" y="450" class="label">M</text>
+        <text x="560" y="460" class="label">u</text>
+        <text x="560" y="470" class="label">x</text>
+        <text x="560" y="440" class="label-small">0</text>
+        <text x="560" y="480" class="label-small">1</text>
+
+        <!-- ALU Control -->
+        <ellipse cx="580" cy="575" rx="25" ry="35" class="control-unit"/>
+        <text x="580" y="570" class="label">ALU</text>
+        <text x="580" y="580" class="label">control</text>
+
+        <!-- ALU -->
+        <polygon points="610,380 670,400 670,460 610,480 610,445 625,430 610,415 610,380" class="alu" />
+        <text x="650" y="430" class="label">ALU</text>
+        <text x="655" y="405" class="label-small">Zero</text> <!-- This is the Zero flag output -->
+        <rect x="600" y="350" width="80" height="20" class="component" fill="white"/>
+        <text x="610" y="360" class="label">N</text>
+        <text x="630" y="360" class="label">Z</text>
+        <text x="650" y="360" class="label">C</text>
+        <text x="670" y="360" class="label">V</text>
+
+        <!-- Data Memory -->
+        <rect x="760" y="420" width="100" height="120" class="component"/>
+        <text x="840" y="490" class="label">Data</text>
+        <text x="840" y="500" class="label">memory</text>
+        <text x="765" y="440" class="label-left">Address</text>
+        <text x="765" y="520" class="label-left">Write</text>
+        <text x="765" y="530" class="label-left">Data</text>
+        <text x="850" y="455" class="label-right">Read</text>
+        <text x="850" y="465" class="label-right">data</text>
+
+        <!-- Mux Writeback -->
+        <ellipse cx="910" cy="480" rx="15" ry="40" class="mux"/>
+        <text x="910" y="470" class="label">M</text>
+        <text x="910" y="480" class="label">u</text>
+        <text x="910" y="490" class="label">x</text>
+        <text x="910" y="460" class="label-small">1</text>
+        <text x="910" y="500" class="label-small">0</text>
+
+        <!-- Shift Left 2 -->
+        <circle cx="620" cy="180" r="25" class="component" fill="white"/>
+        <text x="620" y="175" class="label">Shift</text>
+        <text x="620" y="188" class="label">left 2</text>
+
+        <!-- Add Branch Target -->
+        <polygon points="670,120 720,140 720,180 670,200 670,170, 680,160 670,150 670,120" class="alu" />
+        <text x="700" y="160" class="label">Add</text>
+
+        <!-- Mux PC Source -->
+        <ellipse cx="870" cy="140" rx="15" ry="40" class="mux"/>
+        <text x="870" y="130" class="label">M</text>
+        <text x="870" y="140" class="label">u</text>
+        <text x="870" y="150" class="label">x</text>
+        <text x="870" y="120" class="label-small">0</text>
+        <text x="870" y="160" class="label-small">1</text>
+
+        <!-- Control Unit -->
+        <ellipse cx="370" cy="280" rx="30" ry="70" class="control-unit"/>
+        <text x="370" y="280" class="label" fill="#007bff">Control</text>
+        <!-- Control Labels (LEGv8 specific) -->
+        <text x="405" y="225" class="control-label">Reg2Loc</text>
+        <text x="405" y="237" class="control-label">Uncondbranch</text> <!-- Note: combined word in diagram -->
+        <text x="405" y="249" class="control-label">FlagBranch</text>
+        <text x="405" y="261" class="control-label">ZeroBranch</text>
+        <text x="405" y="273" class="control-label">MemRead</text>
+        <text x="405" y="285" class="control-label">MemtoReg</text> <!-- Note: combined word -->
+        <text x="405" y="297" class="control-label">MemWrite</text>
+        <text x="405" y="309" class="control-label">FlagWrite</text>
+        <text x="405" y="321" class="control-label">ALUSrc</text>
+        <text x="405" y="333" class="control-label">ALUOp</text>
+        <text x="405" y="345" class="control-label">RegWrite</text>
+
+        <!--
+        <polyline class="wire-blue" points="50,50 150,100" marker-end="url(#arrow-blue)" />
+        <polyline class="wire-black" points="50,150 150,200" marker-end="url(#arrow-black)" />
+        -->
+
+        <!--MUX to PC-->
+        <polyline class="wire-black" points="885,140 930,140"/>
+        <polyline class="wire-black" points="930,140 930,50"/>
+        <polyline class="wire-black" points="930,50 20,50"/>
+        <polyline class="wire-black" points="20,50 20,380"/>
+        <polyline class="wire-black" points="20,380 40,380" marker-end="url(#arrow-black)"/>
+
+        <!--Add to MUX-->
+        <polyline class="wire-black" points="230,110 860,110" marker-end="url(#arrow-black)"/>
+
+        <!--PC to InsMemory-->
+        <polyline class="wire-black" points="70,380 115,380" marker-end="url(#arrow-black)"/>
+
+        <!--PC to Add-->
+        <polyline class="wire-black" points="92,380 92,90"/>
+        <polyline class="wire-black" points="92,90 170,90" marker-end="url(#arrow-black)"/>
+
+        <!--4 to Add-->
+        <polyline class="wire-black" points="135,130 170,130" marker-end="url(#arrow-black)"/>
+
+        <!--Add to MUX-->
+        <polyline class="wire-black" points="720,160 855,160" marker-end="url(#arrow-black)"/>
+
+        <!--Shift Left 2 to Add-->
+        <polyline class="wire-black" points="645,185 670,185" marker-end="url(#arrow-black)"/>
+
+        <!--PC to Add-->
+        <polyline class="wire-black" points="92,200 290,200"/>
+        <polyline class="wire-black" points="290,200 290,140"/>
+        <polyline class="wire-black" points="290,140 670,140" marker-end="url(#arrow-black)"/>
+
+        <!--Sign Extend to Shift Left 2-->
+        <polyline class="wire-black" points="460,565 520,565"/>
+        <polyline class="wire-black" points="520,565 520,180"/>
+        <polyline class="wire-black" points="520,180 595,180" marker-end="url(#arrow-black)"/>
+
+        <!--InsMemory to Sign Extend-->
+        <polyline class="wire-black" points="205,430 230,430"/>
+        <polyline class="wire-black" points="230,430 230,565"/>
+        <polyline class="wire-black" points="230,565 420,565" marker-end="url(#arrow-black)"/>
+
+        <!--InsMemory to Control-->
+        <polyline class="wire-black" points="230,430 230,280"/>
+        <polyline class="wire-black" points="230,280 340,280" marker-end="url(#arrow-black)"/>
+
+        <polyline class="wire-black" points="230,380 390,380" marker-end="url(#arrow-black)"/>
+        <polyline class="wire-black" points="230,415 325,415" marker-end="url(#arrow-black)"/>
+        <polyline class="wire-black" points="230,470 390,470" marker-end="url(#arrow-black)"/>
+
+        <polyline class="wire-black" points="290,470 290,445"/>
+        <polyline class="wire-black" points="290,445 325,445" marker-end="url(#arrow-black)"/>
+
+        <!--MUX to Registers-->
+        <polyline class="wire-black" points="355,430 390,430" marker-end="url(#arrow-black)"/>
+
+        <!--InsMemory to ALU Control-->
+        <polyline class="wire-black" points="370,565 370,615"/>
+        <polyline class="wire-black" points="370,615 535,615"/>
+        <polyline class="wire-black" points="535,615 535,580"/>
+        <polyline class="wire-black" points="535,580 555,580" marker-end="url(#arrow-black)"/>
+
+        <!--Registers to MUX-->
+        <polyline class="wire-black" points="490,440 545,440" marker-end="url(#arrow-black)"/>
+
+        <!--Sign Extends to MUX-->
+        <polyline class="wire-black" points="520,480 545,480" marker-end="url(#arrow-black)"/>
+
+        <!--Registers to ALU-->
+        <polyline class="wire-black" points="490,400 610,400" marker-end="url(#arrow-black)"/>
+
+        <!--MUX to ALU-->
+        <polyline class="wire-black" points="575,460 610,460" marker-end="url(#arrow-black)"/>
+
+        <!--Registers to Data Memory-->
+        <polyline class="wire-black" points="505,440 505,525"/>
+        <polyline class="wire-black" points="505,525 760,525" marker-end="url(#arrow-black)"/>
+
+        <!--ALU to Data Memory-->
+        <polyline class="wire-black" points="670,440 760,440" marker-end="url(#arrow-black)"/>
+
+        <!--ALU to MUX-->
+        <polyline class="wire-black" points="740,440 740,570"/>
+        <polyline class="wire-black" points="740,570 880,570"/>
+        <polyline class="wire-black" points="880,570 880,500"/>
+        <polyline class="wire-black" points="880,500 895,500" marker-end="url(#arrow-black)"/>
+
+        <!--MUX to Registers-->
+        <polyline class="wire-black" points="925,480 940,480"/>
+        <polyline class="wire-black" points="940,480 940,630"/>
+        <polyline class="wire-black" points="940,630 350,630"/>
+        <polyline class="wire-black" points="350,630 350,485"/>
+        <polyline class="wire-black" points="350,485 390,485" marker-end="url(#arrow-black)"/>
+
+        <!--Data Memory to MUX-->
+        <polyline class="wire-black" points="860,460 895,460" marker-end="url(#arrow-black)"/>
+
+        <!--ALU to Flag-->
+        <polyline class="wire-black" points="640,390 640,370" marker-end="url(#arrow-black)"/>
+
+        <!--Logic Path-->
+        <!--RegWrite-->
+        <polyline class="wire-blue" points="370,350 440,350"/>
+        <polyline class="wire-blue" points="440,350 440,365"/>
+
+        <!--ALUOp-->
+        <polyline class="wire-blue" points="385,340 513,340"/>
+        <polyline class="wire-blue" points="513,340 513,622"/>
+        <polyline class="wire-blue" points="513,622 580,622"/>
+        <polyline class="wire-blue" points="580,622 580,610"/>
+
+        <!--ALU Control to ALU-->
+        <polyline class="wire-blue" points="605,580 640,580"/>
+        <polyline class="wire-blue" points="640,580 640,470"/>
+
+        <!--ALUSrc-->
+        <polyline class="wire-blue" points="393,327 560,327"/>
+        <polyline class="wire-blue" points="560,327 560,420"/>
+
+        <!--FlagWrite-->
+        <polyline class="wire-blue" points="395,315 640,315"/>
+        <polyline class="wire-blue" points="640,315 640,350"/>
+
+        <!--MemWrite-->
+        <polyline class="wire-blue" points="400,303 805,303"/>
+        <polyline class="wire-blue" points="805,303 805,420"/>
+
+        <!--MemToReg-->
+        <polyline class="wire-blue" points="400,292 910,292"/>
+        <polyline class="wire-blue" points="910,292 910,440"/>
+
+        <!--MemRead-->
+        <polyline class="wire-blue" points="400,280 970,280"/>
+        <polyline class="wire-blue" points="970,280 970,600"/>
+        <polyline class="wire-blue" points="970,600 810,600"/>
+        <polyline class="wire-blue" points="810,600 810,540"/>
+
+        <g transform="translate(690, 335)">
+            <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate"/>
+        </g>
+
+        <g transform="translate(750, 335)">
+            <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate"/>
+        </g>
+
+        <g transform="translate(810, 235)">
+            <path d="M 5 0 C 15 0, 30 5, 35 15 C 30 25, 15 30, 5 30 A 5 15 0 0 0 5 0 Z" class="gate"/>
+        </g>
+
+        <!--ZeroBranch-->
+        <polyline class="wire-blue" points="400,267 750,267"/>
+        <polyline class="wire-blue" points="750,267 750,345"/>
+        <polyline class="wire-blue" points="750,345 765,345"/>
+
+        <polyline class="wire-blue" points="670,405 750,405"/>
+        <polyline class="wire-blue" points="750,405 750,355"/>
+        <polyline class="wire-blue" points="750,355 765,355"/>
+
+        <polyline class="wire-blue" points="780,350 790,350"/>
+        <polyline class="wire-blue" points="790,350 790,260"/>
+        <polyline class="wire-blue" points="790,260 818,260"/>
+
+        <!--FlagBranch-->
+        <polyline class="wire-blue" points="397,255 690,255"/>
+        <polyline class="wire-blue" points="690,255 690,345"/>
+        <polyline class="wire-blue" points="690,345 705,345"/>
+
+        <polyline class="wire-blue" points="680,360 705,360"/>
+
+        <polyline class="wire-blue" points="720,350 730,350"/>
+        <polyline class="wire-blue" points="730,350 730,250"/>
+        <polyline class="wire-blue" points="730,250 820,250"/>
+
+        <!--Uncondbranch-->
+        <polyline class="wire-blue" points="395,243 820,243"/>
+
+        <!--ORLogic-->
+        <polyline class="wire-blue" points="845,250 870,250"/>
+        <polyline class="wire-blue" points="870,250 870,180"/>
+
+        <!--Reg2Loc-->
+        <polyline class="wire-blue" points="390,230 400,230"/>
+        <polyline class="wire-blue" points="400,230 400,180"/>
+        <polyline class="wire-blue" points="400,180 220,180"/>
+        <polyline class="wire-blue" points="220,180 220,500"/>
+        <polyline class="wire-blue" points="220,500 340,500"/>
+        <polyline class="wire-blue" points="340,500 340,463"/>
+
+        <!-- The Dot itself -->
+        <circle id="dot-pc-to-add" class="data-dot" cx="70" cy="380">
+            <!-- Animation definition -->
+            <animateMotion
+                id="anim-pc-to-add"
+                dur="0.5s"
+                begin="indefinite"
+                fill="freeze"
+                path="M 70 380 L 92 380 L 92 90 L 170 90"
+                />
+        </circle>
+
+    </svg>
+
+    <script>
+        // Lấy tham chiếu đến nút bấm và các phần tử animation
+        const simulateButton = document.getElementById('simulate-button');
+        const dotPcToAdd = document.getElementById('dot-pc-to-add');
+        const animPcToAdd = document.getElementById('anim-pc-to-add');
+
+        // Hàm để chạy hoạt ảnh PC -> Add
+        function animatePcToAdd() {
+            // Đặt lại trạng thái (nếu cần chạy lại nhiều lần)
+            // Nếu bạn chỉ chạy 1 lần, dòng này có thể không cần thiết
+            // animPcToAdd.endElement(); // Dừng nếu đang chạy
+
+            // Làm chấm tròn hiển thị
+            dotPcToAdd.style.visibility = 'visible';
+            // Bắt đầu animation
+            animPcToAdd.beginElement();
+        }
+
+        // Gắn hàm vào sự kiện click của nút
+        simulateButton.addEventListener('click', () => {
+            console.log("Simulate button clicked, starting PC->Add animation...");
+            // Gọi hàm để bắt đầu animation cụ thể này
+            animatePcToAdd();
+
+            // --- Bạn có thể thêm các lệnh gọi animation khác ở đây ---
+            // Ví dụ: animateInstructionFetch();
+            //        animateAluOperation();
+            // ...
+
+            // Cập nhật output JSON (ví dụ)
+            const outputArea = document.getElementById('json-output');
+            outputArea.textContent = JSON.stringify({ status: "Animating PC to Add..." }, null, 2);
+        });
+
+        // (Tùy chọn) Ẩn chấm tròn khi animation kết thúc
+        animPcToAdd.addEventListener('endEvent', () => {
+             console.log("PC->Add animation finished.");
+             // Bạn có thể ẩn nó đi nếu muốn, hoặc để nó ở điểm cuối
+             // dotPcToAdd.style.visibility = 'hidden';
+        });
+
+    </script>
+
+</body>
+</html>
