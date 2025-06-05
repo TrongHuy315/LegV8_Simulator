@@ -1,7 +1,7 @@
 // --- START OF FILE general.js ---
 
 import * as rFormat from '../format/r_format.js' // Và các module parse khác nếu cần
-import * as addInstruction from './R_format/add.js';
+import * as addInstruction from './Animation/R_format/add.js';
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 
