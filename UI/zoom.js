@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         offsetX = initialOffsetX;
         offsetY = initialOffsetY;
         applyTransform();
-        console.log("Zoom Reset");
+        // console.log("Zoom Reset");
     }
 
     zoomContainer.addEventListener('wheel', (event) => {
