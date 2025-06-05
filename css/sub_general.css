@@ -22,6 +22,14 @@
     --editor-bg: #f8f9fc;
     --editor-border: #dbe4f0;
     --editor-text: #495057; /* Added for editor text */
+    --editor-line-height: 1.5; /* Thêm biến cho line-height để dễ đồng bộ */
+    --editor-font-size: 14px;   /* Thêm biến cho font-size */
+    --editor-padding-vertical: 10px; /* Padding top/bottom */
+    --editor-padding-horizontal: 12px;
+    --line-numbers-padding-horizontal: 8px; /* Padding left/right cho line-numbers */
+    --line-numbers-width: 35px; /* Tăng nhẹ để chứa số có 3 chữ số + padding */
+    --line-numbers-bg: #f0f0f0; /* Nền cho cột số dòng (light theme) */
+    --line-numbers-text: #888888;
     --button-bg-1: #0d6efd;
     --button-bg-2: #0a58ca;
     --button-hover-1: #0b5ed7;
@@ -76,6 +84,8 @@ body.dark-theme {
     --editor-bg: #21222c; /* Dracula darker */
     --editor-border: #44475a;
     --editor-text: #bd93f9; /* Dracula purple for code */
+    --line-numbers-bg: #252526; /* Nền cho cột số dòng (dark theme) */
+    --line-numbers-text: #858585;
     --button-bg-1: #50fa7b; /* Dracula green */
     --button-bg-2: #44c767;
     --button-hover-1: #5af78e;
@@ -183,23 +193,65 @@ body {
     margin-bottom: 5px;
     font-size: 15px;
     color: var(--controls-label-color); /* Use variable */
-     transition: color 0.5s ease;
+    transition: color 0.5s ease;
+}
+
+.editor-wrapper {
+    display: flex;
+    position: relative;
+    border: 1px solid var(--editor-border);
+    border-radius: 8px;
+    background-color: var(--editor-bg); /* Nền chung cho cả cụm */
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+    overflow: hidden;
+    box-sizing: border-box; /* QUAN TRỌNG */
+    height: 200px;
+}
+
+.editor-wrapper:focus-within {
+    border-color: var(--editor-border-focus, #007bff);
+}
+
+.line-numbers {
+    flex-shrink: 0;
+    width: var(--line-numbers-width);
+    padding: var(--editor-padding-vertical) var(--line-numbers-padding-horizontal);
+    /* padding-right: 5px;  Đã gộp vào --line-numbers-padding-horizontal nếu muốn */
+    background-color: var(--line-numbers-bg); /* Nền riêng */
+    text-align: center;
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height); /* PHẢI KHỚP TEXTAREA */
+    color: var(--line-numbers-text);
+    user-select: none;
+    overflow-y: hidden; /* Ngăn thanh cuộn riêng */
+    box-sizing: border-box;
+    border-right: 1px solid var(--editor-border); /* Đường kẻ phân cách */
+}
+
+.line-numbers span {
+    display: block;
+    /* Không nên có margin/padding ở đây làm lệch dòng */
 }
 
 #instruction-editor {
-    width: 100%;
-    height: 200px;
+    flex-grow: 1;
+    min-width: 0; /* Giúp flexbox co giãn đúng cách */
+    height: 200px; /* Chiều cao bạn muốn */
     font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    font-size: 14px;
-    border: 1px solid var(--editor-border); /* Use variable */
-    padding: 10px 12px;
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height); /* PHẢI KHỚP LINE-NUMBERS */
+    padding: var(--editor-padding-vertical) var(--editor-padding-horizontal);
     box-sizing: border-box;
     resize: vertical;
-    border-radius: 8px;
-    line-height: 1.5;
-    background-color: var(--editor-bg); /* Use variable */
-    color: var(--editor-text); /* Use variable */
-    transition: background-color 0.5s ease, border-color 0.5s ease, color 0.5s ease; /* Add transition */
+    border: none; /* Wrapper đã có border */
+    border-radius: 0; /* Wrapper đã có radius */
+    background-color: transparent; /* Để lấy nền từ wrapper, hoặc var(--editor-bg) nếu muốn nền riêng */
+    color: var(--editor-text);
+    outline: none;
+    overflow-y: scroll; /* Luôn hiển thị thanh cuộn để tránh nhảy layout */
+    white-space: pre;
+    word-wrap: normal;
 }
 
 #simulate-button {
