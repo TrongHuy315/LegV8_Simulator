@@ -7,6 +7,7 @@ import * as normalCB from './Animation/CB_format/normal.js';
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as update from './register.js';
+import * as fullScreen from '../UI/fullscreen.js'
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -19,7 +20,6 @@ const simulationContainer = document.getElementById('simulation-container'); // 
 // --- Trạng thái Hoạt ảnh Không Đồng Bộ ---
 let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
 let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của <animateMotion>)
-let pendingDotsToHide = {};
 
 // Register storage (if not already declared)
 let registers = Array(32).fill(0); // 32 registers, all initialized to 0
@@ -83,37 +83,6 @@ export const addAnimationEndActions = {
 };
 
 
-// --- **** START: Fullscreen Functionality **** ---
-function toggleFullScreen() {
-    if (!document.fullscreenElement &&    // Standard property
-        !document.mozFullScreenElement && // Firefox
-        !document.webkitFullscreenElement && // Chrome, Safari and Opera
-        !document.msFullscreenElement ) {  // IE/Edge
-        if (simulationContainer.requestFullscreen) {
-            simulationContainer.requestFullscreen();
-        } else if (simulationContainer.mozRequestFullScreen) { /* Firefox */
-            simulationContainer.mozRequestFullScreen();
-        } else if (simulationContainer.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-            simulationContainer.webkitRequestFullscreen();
-        } else if (simulationContainer.msRequestFullscreen) { /* IE/Edge */
-            simulationContainer.msRequestFullscreen();
-        }
-         // console.log("Entering Fullscreen");
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { /* Firefox */
-            document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE/Edge */
-            document.msExitFullscreen();
-        }
-        // console.log("Exiting Fullscreen");
-    }
-}
-// --- **** END: Fullscreen Functionality **** ---
-
 // Hàm chuyển đổi giá trị 'dur' (vd: "1.5s", "500ms") sang milliseconds
 function parseDuration(durationString) {
     if (!durationString) return setting.DEFAULT_ANIMATION_DURATION_MS;
@@ -137,7 +106,7 @@ function triggerAnimation(animId, graph) {
     const nextAnims = animData.next || [];
     const animationElement = utilUI.getElement(svg, animId);
     const dotId = animId.replace(/^anim-/, 'dot-');
-    const dotElement = utilUI.getElement(svg, dotId); // utilUI.getElement cần svg
+    const dotElement = utilUI.getElement(svg, dotId);
 
     if (!animationElement) {
         console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
@@ -150,12 +119,8 @@ function triggerAnimation(animId, graph) {
     if (dotElement) {
         dotElement.style.visibility = 'visible';
     }
-    }
 
     try {
-        animationElement.beginElement();
-        runningAnimations.add(animId);
-
         animationElement.beginElement();
         runningAnimations.add(animId);
 
@@ -164,20 +129,17 @@ function triggerAnimation(animId, graph) {
                 utilUI.hideDotForAnim(svg, runningAnimations, animId);
             } else {
                 runningAnimations.delete(animId);
-                runningAnimations.delete(animId);
             }
 
             delete activeTimeouts[animId];
 
             const componentIdToHighlight = setting.animationToComponentHighlight[animId];
             if (componentIdToHighlight) {
-                // Truyền svg vào highlightComponent nếu cần
                 utilUI.highlightComponent(svg, componentIdToHighlight);
             }
 
             const endAction = addAnimationEndActions[animId];
             if (typeof endAction === 'function') {
-                endAction();
                 endAction();
             }
 
@@ -186,12 +148,10 @@ function triggerAnimation(animId, graph) {
             });
 
         }, durationMs);
-        }, durationMs);
 
         activeTimeouts[animId] = timeoutId;
     } catch (e) {
         console.error(`Lỗi khi bắt đầu ${animId}:`, e);
-        runningAnimations.delete(animId);
         runningAnimations.delete(animId);
     }
 }
@@ -199,11 +159,6 @@ function triggerAnimation(animId, graph) {
 
 function simulateStep(instruction) {
     return new Promise((resolve) => {
-        // Reset trạng thái
-        // utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
-        // utilUI.hideAllDots(svg);
-        // utilUI.removeAllHighlights(svg);
-
         const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
         lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
 
@@ -213,7 +168,7 @@ function simulateStep(instruction) {
                 status: "Bỏ qua dòng trống hoặc chú thích.",
                 instruction: trimmedLine
             }, null, 2);
-            resolve(); // Tránh treo Promise
+            resolve(); 
             return;
         }
 
@@ -232,7 +187,6 @@ function simulateStep(instruction) {
         } else {
             parsedInstruction = result;
         }
-
 
         let outputJson = {};
 
@@ -298,7 +252,6 @@ function toggleTheme() {
     let newTheme = currentTheme === 'light' ? 'dark' : 'light';
     localStorage.setItem('theme', newTheme);
     applyTheme(newTheme);
-    // console.log("Theme toggled to:", newTheme);
 }
 
 // Load saved theme on startup
@@ -325,15 +278,12 @@ window.addEventListener('load', () => {
                 await simulateStep(instruction);  // Wait for animation to finish
             }
         });
-
-        // console.log("Sự kiện click đã được gắn vào nút Simulate.");
     } else {
         console.error("Không tìm thấy nút Simulate!");
     }
 
     if (themeToggleButton) {
         themeToggleButton.addEventListener('click', toggleTheme);
-         // console.log("Theme toggle button listener attached.");
     } else {
         console.error("Theme toggle button not found!");
     }
