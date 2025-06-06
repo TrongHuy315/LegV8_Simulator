@@ -119,7 +119,7 @@ function parseDuration(durationString) {
     if (!durationString) return setting.DEFAULT_ANIMATION_DURATION_MS;
     const lowerCase = durationString.toLowerCase().trim();
     let value = parseFloat(lowerCase);
-    if (isNaN(value)) return setting.DEFAULT_ANIMATION_DURATION_MS;
+    if (isNaN(value)) return setting.DEFAULT_ANIMATION_DURATION_MS; // Kiểm tra isNaN
     if (lowerCase.endsWith('ms')) {
         return value;
     } else if (lowerCase.endsWith('s')) {
@@ -137,7 +137,7 @@ function triggerAnimation(animId, graph) {
     const nextAnims = animData.next || [];
     const animationElement = utilUI.getElement(svg, animId);
     const dotId = animId.replace(/^anim-/, 'dot-');
-    const dotElement = utilUI.getElement(svg, dotId);
+    const dotElement = utilUI.getElement(svg, dotId); // utilUI.getElement cần svg
 
     if (!animationElement) {
         console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
@@ -150,8 +150,12 @@ function triggerAnimation(animId, graph) {
     if (dotElement) {
         dotElement.style.visibility = 'visible';
     }
+    }
 
     try {
+        animationElement.beginElement();
+        runningAnimations.add(animId);
+
         animationElement.beginElement();
         runningAnimations.add(animId);
 
@@ -160,17 +164,20 @@ function triggerAnimation(animId, graph) {
                 utilUI.hideDotForAnim(svg, runningAnimations, animId);
             } else {
                 runningAnimations.delete(animId);
+                runningAnimations.delete(animId);
             }
 
             delete activeTimeouts[animId];
 
             const componentIdToHighlight = setting.animationToComponentHighlight[animId];
             if (componentIdToHighlight) {
+                // Truyền svg vào highlightComponent nếu cần
                 utilUI.highlightComponent(svg, componentIdToHighlight);
             }
 
             const endAction = addAnimationEndActions[animId];
             if (typeof endAction === 'function') {
+                endAction();
                 endAction();
             }
 
@@ -179,10 +186,12 @@ function triggerAnimation(animId, graph) {
             });
 
         }, durationMs);
+        }, durationMs);
 
         activeTimeouts[animId] = timeoutId;
     } catch (e) {
         console.error(`Lỗi khi bắt đầu ${animId}:`, e);
+        runningAnimations.delete(animId);
         runningAnimations.delete(animId);
     }
 }
@@ -223,6 +232,7 @@ function simulateStep(instruction) {
         } else {
             parsedInstruction = result;
         }
+
 
         let outputJson = {};
 
@@ -332,21 +342,19 @@ window.addEventListener('load', () => {
         outputArea.textContent = JSON.stringify({ message: "Ready. Enter LEGv8 code. Shortcuts: (R)eset Zoom, (T)heme, F11 Fullscreen" }, null, 2);
     }
 
-    // Keyboard Shortcuts
+    // --- KEYBOARD SHORTCUTS ---
     document.addEventListener('keydown', (event) => {
-        // F11 for Fullscreen
         if (event.key === 'F11') {
-             event.preventDefault(); // Prevent default browser fullscreen toggle
-             toggleFullScreen();
-        }
-        // 't' or 'T' for Theme Toggle (avoid if typing)
-        else if ((event.key === 't' || event.key === 'T') && event.target.tagName !== 'TEXTAREA') {
-            toggleTheme();
+            event.preventDefault();
+            if (simulationContainer && fullScreen) { // Kiểm tra fullScreen
+                fullScreen.toggleFullScreen(simulationContainer);
+            }
+        } else if ((event.key === 't' || event.key === 'T') && event.target.tagName !== 'TEXTAREA') {
+            if (themeToggleButton && theme) { // Kiểm tra theme
+                theme.toggleTheme(themeToggleButton);
+            }
         }
     });
-    // console.log("Keyboard listeners for F11 and T attached.");
-
+    console.log("Global event listeners initialized.");
 });
-
-
 // --- END OF FILE general.js ---
