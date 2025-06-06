@@ -1,9 +1,12 @@
 // --- START OF FILE general.js ---
 
-import * as rFormat from '../format/r_format.js' // Và các module parse khác nếu cần
-import * as addInstruction from './Animation/R_format/add.js';
+import * as format from '../format/format.js' // Và các module parse khác nếu cần
+import * as normalR from './Animation/R_format/normal.js';
+import * as normalD from './Animation/D_format/normal.js';
+import * as normalCB from './Animation/CB_format/normal.js';
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
+import * as update from './register.js';
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -17,6 +20,67 @@ const simulationContainer = document.getElementById('simulation-container'); // 
 let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
 let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của <animateMotion>)
 let pendingDotsToHide = {};
+
+// Register storage (if not already declared)
+let registers = Array(32).fill(0); // 32 registers, all initialized to 0
+let memory = Array(100000).fill(0); 
+// Function to execute format command and update registers
+function executeFormat(parsedInstruction) {
+    if (!parsedInstruction || parsedInstruction.error) return;
+    if (format.R_FORMAT_OPCODES.includes(parsedInstruction.opcode)) {
+        update.RFormat(parsedInstruction, registers);
+    }
+    else if (format.D_format_OPCODES.includes(parsedInstruction.opcode)) {
+        update.DFormat(parseDuration, registers, memory);
+    }
+    else if (format.CB_format_OPCODES.includes(parsedInstruction.opcode)) {
+        update.CBFormat(parsedInstruction, registers, memory);
+    }
+    renderRegisterTable(); // Update the register table UI if you have this function
+}
+
+// Function to render the register table (if not already present)
+function renderRegisterTable() {
+    const container = document.getElementById('register-table');
+    if (!container) return;
+    let html = '<table><tr><th>Register</th><th>Value</th></tr>';
+    for (let i = 0; i < 32; i++) {
+        html += `<tr><td>X${i}</td><td>${registers[i]}</td></tr>`;
+    }
+    html += '</table>';
+    container.innerHTML = html;
+}
+
+function toggleLight(id) {
+    const circle = document.getElementById(id);
+    if (circle.getAttribute('visibility') === 'hidden') {
+        circle.setAttribute('visibility', 'visible');
+    } else {
+        circle.setAttribute('visibility', 'hidden');
+    }
+}
+
+export const addAnimationEndActions = {
+    'anim-1': () => toggleLight('lightCircle-pc'),
+    'anim-11': () => toggleLight('lightCircle-muxregwritedest-top'),
+    'anim-18': () => toggleLight('lightCircle-muxregwritedest-bottom'),
+    'anim-40': () => {
+        //toggleLight('lightCircle-muxregwritedest-top')
+        //toggleLight('lightCircle-muxregwritedest-bottom')
+    },
+    'anim-28': () => toggleLight('lightCircle-muxalusrc-bottom'),
+    'anim-26': () => toggleLight('lightCircle-muxalusrc-bottom'),
+    'anim-30': () => toggleLight('lightCircle-alu-top'),
+    'anim-37': () => toggleLight('lightCircle-alu-top'),
+    'anim-35': () => toggleLight('lightCircle-muxwriteback-top'),
+    'anim-34': () => toggleLight('lightCircle-muxwriteback-top'),
+    'anim-8': () => toggleLight('lightCircle-addbranch-top'),
+    'anim-38': () => toggleLight('lightCircle-addbranch-top'),
+    'anim-2': () => toggleLight('lightCircle-muxpcsrc-top'),
+    'anim-39': () => toggleLight('lightCircle-muxpcsrc-top'),
+    'anim-47': () => toggleLight('lightCircle-flags-top'),
+    'anim-31': () => toggleLight('lightCircle-flags-top'),
+};
 
 
 // --- **** START: Fullscreen Functionality **** ---
@@ -61,187 +125,150 @@ function parseDuration(durationString) {
     } else if (lowerCase.endsWith('s')) {
         return value * 1000;
     }
-    // Mặc định coi là giây nếu không có đơn vị
     return value * 1000;
 }
 
-// Hàm bắt đầu một hoạt ảnh cụ thể và lên lịch kết thúc/bắt đầu tiếp theo
 function triggerAnimation(animId, graph) {
-    // Kiểm tra đồ thị và trạng thái đang chạy
     if (!graph || !graph[animId] || runningAnimations.has(animId)) {
-        // // console.log(`Bỏ qua trigger cho ${animId} (không có trong graph hoặc đang chạy)`);
         return;
     }
 
     const animData = graph[animId];
-    const nextAnims = animData.next || []; // Lấy danh sách anim tiếp theo
-
+    const nextAnims = animData.next || [];
     const animationElement = utilUI.getElement(svg, animId);
     const dotId = animId.replace(/^anim-/, 'dot-');
     const dotElement = utilUI.getElement(svg, dotId);
 
     if (!animationElement) {
-         console.warn(`Không tìm thấy thẻ <animateMotion> với ID ${animId}`);
-         return;
+        console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
+        return;
     }
-     if (!dotElement) {
-         console.warn(`Không tìm thấy thẻ <circle> với ID ${dotId}`);
-         // Vẫn có thể chạy hoạt ảnh logic (nếu có) nhưng không có hiển thị
-         // return; // Hoặc quyết định dừng hẳn nếu không có dot
-     }
 
-
-    // *** Đọc thời lượng 'dur' từ chính thẻ <animateMotion> ***
     const durationAttr = animationElement.getAttribute('dur');
-    const durationMs = parseDuration(durationAttr); // Chuyển đổi sang ms
+    const durationMs = parseDuration(durationAttr);
 
-    // console.log(`Triggering ${animId} (SVG dur: ${durationAttr} -> ${durationMs}ms)`);
-
-     // Hiển thị chấm tròn (nếu tìm thấy)
-     if(dotElement) {
+    if (dotElement) {
         dotElement.style.visibility = 'visible';
-     }
+    }
 
     try {
-        // Cân nhắc reset hoạt ảnh SMIL về đầu nếu cần
-        // animationElement.endElement();
-        animationElement.beginElement(); // Bắt đầu hoạt ảnh SMIL
-        runningAnimations.add(animId); // Đánh dấu đang chạy
+        animationElement.beginElement();
+        runningAnimations.add(animId);
 
-        // Lên lịch hành động KHI KẾT THÚC (dựa trên duration đọc được)
         const timeoutId = setTimeout(() => {
-            // // console.log(`Hoạt ảnh ${animId} hoàn thành.`);
-            if(dotElement) {
-                utilUI.hideDotForAnim(svg, runningAnimations, animId); // Ẩn chấm tròn (nếu có)
+            if (dotElement) {
+                utilUI.hideDotForAnim(svg, runningAnimations, animId);
             } else {
-                runningAnimations.delete(animId); // Vẫn xóa khỏi running nếu không có dot
+                runningAnimations.delete(animId);
             }
-            delete activeTimeouts[animId]; // Xóa timeout đã hoàn thành
 
-            // --- **** START: Check and Trigger Highlight **** ---
+            delete activeTimeouts[animId];
+
             const componentIdToHighlight = setting.animationToComponentHighlight[animId];
             if (componentIdToHighlight) {
                 utilUI.highlightComponent(svg, componentIdToHighlight);
             }
-            // --- **** END: Check and Trigger Highlight **** ---
 
-            // --- **** START: Execute End Action from Map **** ---
-            const endAction = rFormat.addAnimationEndActions[animId];
+            const endAction = addAnimationEndActions[animId];
             if (typeof endAction === 'function') {
-                // console.log(`Executing end action for ${animId}`);
-                endAction(); // Gọi hàm được định nghĩa trong map
+                endAction();
             }
-            // --- **** END: Execute End Action from Map ****
 
-            // Kích hoạt các hoạt ảnh tiếp theo trong đồ thị
-            // // console.log(`Kích hoạt tiếp theo từ ${animId}:`, nextAnims);
             nextAnims.forEach(nextAnimId => {
-                // Cần truyền lại đồ thị gốc
                 triggerAnimation(nextAnimId, graph);
             });
 
-        }, durationMs); // Timeout bằng đúng thời gian hoạt ảnh đọc được
+        }, durationMs);
 
-        activeTimeouts[animId] = timeoutId; // Lưu lại ID timeout để có thể hủy
-
+        activeTimeouts[animId] = timeoutId;
     } catch (e) {
         console.error(`Lỗi khi bắt đầu ${animId}:`, e);
-        runningAnimations.delete(animId); // Xóa nếu không start được
+        runningAnimations.delete(animId);
     }
 }
 
 
-// --- Hàm Thực hiện một Bước Mô phỏng ---
 function simulateStep(instruction) {
-    // *** Reset trạng thái ***
-    // utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations); // <-- HỦY TẤT CẢ TIMEOUT CŨ
-    // utilUI.hideAllDots(svg);              // <-- Ẩn tất cả chấm tròn
-    // utilUI.removeAllHighlights(svg);
     return new Promise((resolve) => {
+        // Reset trạng thái
+        // utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
+        // utilUI.hideAllDots(svg);
+        // utilUI.removeAllHighlights(svg);
+
         const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
-        lightCircles.forEach(lightCircle => {
-            lightCircle.setAttribute('visibility', 'hidden');
-        });
+        lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
 
-        // const instructions = instructionEditor.value.split('\n');
-        // console.log("instructions: ", instructions);
-        let parsedInstruction = null;
-        let rawLine = "Không tìm thấy lệnh hợp lệ.";
-
-        console.log("instruction: ", instruction);
         const trimmedLine = instruction.trim();
-        if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) { 
-            return; 
+        if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
+            outputArea.textContent = JSON.stringify({
+                status: "Bỏ qua dòng trống hoặc chú thích.",
+                instruction: trimmedLine
+            }, null, 2);
+            resolve(); // Tránh treo Promise
+            return;
         }
-        let result = rFormat.parseRFormatInstruction(trimmedLine);
-        console.log(result);
-        // Thêm parse cho I, D, B, CB... ở đây
-        if (result && result.error) { 
-            if (!parsedInstruction) { 
-                parsedInstruction = result; 
-                rawLine = result.raw || trimmedLine; 
-            } 
+
+        let parsedInstruction = null;
+        let rawLine = trimmedLine;
+        let result = format.parseRFormatInstruction(trimmedLine);
+        console.log("result", result);
+        if (result && result.error) {
+            parsedInstruction = result;
+        } else if (!result) {
+            parsedInstruction = {
+                error: true,
+                message: "Lệnh không nhận dạng được.",
+                raw: trimmedLine
+            };
+        } else {
+            parsedInstruction = result;
         }
-        else if (!result && !parsedInstruction) { 
-            parsedInstruction = { error: true, message: "Lệnh không nhận dạng được.", raw: trimmedLine }; 
-            rawLine = trimmedLine; 
-        }
-        else if (result && !result.error) { 
-            parsedInstruction = result; 
-            rawLine = result.raw || trimmedLine; 
-            // break; 
-        }
+
         let outputJson = {};
-        if (!parsedInstruction || parsedInstruction.error) {
-            if (!parsedInstruction) { 
-                outputJson = { 
-                    status: "Không tìm thấy lệnh hợp lệ trong editor.", 
-                    instruction: rawLine 
-                }; 
-            }
-            else { 
-                outputJson = { 
-                    status: "Lỗi: " + parsedInstruction.message, 
-                    instruction: parsedInstruction.raw 
-                }; 
-                console.error("Lỗi phân tích:", parsedInstruction.message, "trên dòng:", parsedInstruction.raw); 
-            }
-        } else { 
-            outputJson = { 
-                status: `Đang mô phỏng lệnh ${parsedInstruction.type || 'Unknown'}-Format`, 
-                details: parsedInstruction 
+
+        if (parsedInstruction.error) {
+            outputJson = {
+                status: "Lỗi: " + parsedInstruction.message,
+                instruction: parsedInstruction.raw
+            };
+            console.error("Lỗi phân tích:", parsedInstruction.message, "trên dòng:", parsedInstruction.raw);
+        } else {
+            outputJson = {
+                status: `Đang mô phỏng lệnh ${parsedInstruction.type || 'Unknown'}-Format`,
+                details: parsedInstruction
             };
 
-            let instructionGraph = null; // Đồ thị cho lệnh này
-            let initialAnims = [];      // Điểm bắt đầu
+            let instructionGraph = null;
+            const initialAnims = ['anim-3'];
 
-            // --- XÁC ĐỊNH ĐỒ THỊ PHỤ THUỘC VÀ ĐIỂM BẮT ĐẦU ---
-            // *** CẦN ĐỊNH NGHĨA ĐỒ THỊ NÀY CẨN THẬN CHO MỖI LỆNH ***
+            executeFormat(parsedInstruction);
             if (parsedInstruction.type === 'R') {
-                if (parsedInstruction.opcode === 'ADD' || parsedInstruction.opcode === 'SUB') {
-                    // console.log(`Định nghĩa đồ thị cho R-Format ${parsedInstruction.opcode}`);
-                    instructionGraph = addInstruction.animationAdd();
-                    initialAnims = ['anim-3']; // Bắt đầu từ fetch
-                }
+                instructionGraph = normalR.animation();
+            } else if (parsedInstruction.type === 'D') {
+                instructionGraph = normalD.animation();
+                // TODO: executeDFormat(parsedInstruction); // Nếu có
+            } else if (parsedInstruction.type === 'CB') {
+                instructionGraph = normalCB.animation();
+            } else if (parsedInstruction.type === 'B') {
+                // instructionGraph = normalB.animation();
             }
 
-            // --- Bắt đầu chạy hoạt ảnh từ điểm khởi đầu ---
             if (instructionGraph && initialAnims.length > 0) {
-                // console.log(`Bắt đầu hoạt ảnh không đồng bộ cho ${parsedInstruction.opcode || parsedInstruction.type}`);
                 initialAnims.forEach(startAnimId => {
-                    // Truyền đồ thị vào hàm trigger
                     triggerAnimation(startAnimId, instructionGraph);
                 });
                 outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${parsedInstruction.opcode || parsedInstruction.type}`;
             } else {
-                console.warn(`Không có đồ thị hoạt ảnh nào được định nghĩa cho lệnh: ${rawLine}`);
-                outputJson.status = `Không có đồ thị hoạt ảnh cụ thể cho lệnh này.`;
+                console.warn(`Không có đồ thị hoạt ảnh nào cho lệnh: ${rawLine}`);
+                outputJson.status = "Không có đồ thị hoạt ảnh cụ thể cho lệnh này.";
             }
         }
+
         outputArea.textContent = JSON.stringify(outputJson, null, 2);
+
         setTimeout(() => {
             resolve();
-        }, 10000);
+        }, 12100); // Delay đảm bảo mô phỏng hoàn thành
     });
 }
 
@@ -271,25 +298,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // --- **** END: Theme Toggle Functionality **** ---
 
-
-// --- Gắn Bộ lắng nghe Sự kiện ---
-// Đảm bảo SVG đã tải xong trước khi gắn sự kiện
 window.addEventListener('load', () => {
-    // Kiểm tra lại tham chiếu svg nếu cần
-    // svg = document.querySelector('svg'); // Gán lại nếu chưa chắc chắn
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations); // <-- HỦY TẤT CẢ TIMEOUT CŨ
-            utilUI.hideAllDots(svg);              // <-- Ẩn tất cả chấm tròn
+            utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
+            utilUI.hideAllDots(svg);
             utilUI.removeAllHighlights(svg);
+
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
             });
+
             for (let instruction of instructions) {
-                await simulateStep(instruction);
+                console.log(instruction);
+                await simulateStep(instruction);  // Wait for animation to finish
             }
         });
+
         // console.log("Sự kiện click đã được gắn vào nút Simulate.");
     } else {
         console.error("Không tìm thấy nút Simulate!");

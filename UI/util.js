@@ -85,3 +85,11 @@ export function highlightComponent(svg, componentId) {
         console.warn(`Component to highlight not found: ${componentId}`);
     }
 }
+export function setMuxSelect(muxId, selected) {
+    const zero = document.getElementById(`${muxId}-0`);
+    const one = document.getElementById(`${muxId}-1`);
+    if (zero && one) {
+        zero.setAttribute('fill', selected === 0 ? 'red' : 'black');
+        one.setAttribute('fill', selected === 1 ? 'red' : 'black');
+    }
+}

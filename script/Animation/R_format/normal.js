@@ -1,4 +1,4 @@
-export function animationAdd() {
+export function animation() {
     return {
         'anim-1': { next: [] },
         'anim-2': { next: [] },
@@ -16,7 +16,7 @@ export function animationAdd() {
         'anim-14': { next: ['anim-40', 'anim-41', 'anim-42', 'anim-43', 'anim-44', 'anim-45', 'anim-46', 'anim-47', 'anim-48', 'anim-49', 'anim-50'] },
         'anim-15': { next: [] },
         'anim-16': { next: ['anim-17', 'anim-20'] },
-        'anim-17': { next: ['anim-18', 'anim-19'] },
+        'anim-17': { next: ['anim-19'] },
         'anim-18': { next: [] },
         'anim-19': { next: [] },
         'anim-20': { next: ['anim-22', 'anim-23'] },
