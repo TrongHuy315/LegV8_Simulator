@@ -17,7 +17,7 @@ export function animation() {
         'anim-14': { next: ['anim-40', 'anim-41', 'anim-42', 'anim-43', 'anim-44', 'anim-45', 'anim-46', 'anim-47', 'anim-48', 'anim-49', 'anim-50'] },
 
         'anim-16': { next: ['anim-17', 'anim-20'] }, // ALUSrc, Reg2Loc
-        'anim-17': { next: ['anim-19'] },
+        'anim-17': { next: ['anim-18', 'anim-19'] },
         'anim-19': { next: ['anim-22'] },           // offset sign extend
 
         'anim-20': { next: ['anim-22', 'anim-24'] }, // Register file

@@ -67,7 +67,7 @@
                 <text x="200" y="425" class="label-right">Instruction</text>
                 <text x="200" y="435" class="label-right">[31-0]</text>
                 <!-- Mux Reg Write Dest -->
-                <ellipse cx="340" cy="423" rx="15" ry="40" class="mux" id="mux-reg-dest"/>
+                <ellipse cx="340" cy="423" rx="15" ry="40" class="mux" id="mux1"/>
                 <text x="340" y="413" class="label">M</text>
                 <text x="340" y="423" class="label">u</text>
                 <text x="340" y="433" class="label">x</text>
@@ -95,7 +95,7 @@
                 <text x="400" y="560" class="label-small">32</text>
                 <text x="480" y="560" class="label-small">64</text>
                 <!-- Mux ALU Src -->
-                <ellipse cx="560" cy="460" rx="15" ry="40" class="mux" id="mux-alu-src"/>
+                <ellipse cx="560" cy="460" rx="15" ry="40" class="mux" id="mux2"/>
                 <text x="560" y="450" class="label">M</text>
                 <text x="560" y="460" class="label">u</text>
                 <text x="560" y="470" class="label">x</text>
@@ -126,7 +126,7 @@
                 <text x="850" y="455" class="label-right">Read</text>
                 <text x="850" y="465" class="label-right">data</text>
                 <!-- Mux Writeback -->
-                <ellipse cx="910" cy="480" rx="15" ry="40" class="mux" id="mux-writeback"/>
+                <ellipse cx="910" cy="480" rx="15" ry="40" class="mux" id="mux3"/>
                 <text x="910" y="470" class="label">M</text>
                 <text x="910" y="480" class="label">u</text>
                 <text x="910" y="490" class="label">x</text>
@@ -140,7 +140,7 @@
                 <polygon points="670,120 720,140 720,180 670,200 670,170, 680,160 670,150 670,120" class="alu" id="add-branch"/>
                 <text x="700" y="160" class="label">Add</text>
                 <!-- Mux PC Source -->
-                <ellipse cx="870" cy="140" rx="15" ry="40" class="mux" id="mux-pc-src"/>
+                <ellipse cx="870" cy="140" rx="15" ry="40" class="mux" id="mux4"/>
                 <text x="870" y="130" class="label">M</text>
                 <text x="870" y="140" class="label">u</text>
                 <text x="870" y="150" class="label">x</text>
@@ -899,22 +899,22 @@
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxregwritedest-top"
+                <circle id="lightCircle-mux1-turn0"
                         cx="340" cy="403" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxregwritedest-bottom"
+                <circle id="lightCircle-mux1-turn1"
                         cx="340" cy="443" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxalusrc-top"
+                <circle id="lightCircle-mux2-turn0"
                         cx="560" cy="440" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxalusrc-bottom"
+                <circle id="lightCircle-mux2-turn1"
                         cx="560" cy="480" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
@@ -929,12 +929,12 @@
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxwriteback-top"
+                <circle id="lightCircle-mux3-turn1"
                         cx="910" cy="460" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxwriteback-bottom"
+                <circle id="lightCircle-mux3-turn0"
                         cx="910" cy="500" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
@@ -949,12 +949,12 @@
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxpcsrc-top"
+                <circle id="lightCircle-mux4-turn0"
                         cx="870" cy="120" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-muxpcsrc-bottom"
+                <circle id="lightCircle-mux4-turn1"
                         cx="870" cy="160" r="15"
                         fill="url(#glow)"
                         visibility="hidden"

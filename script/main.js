@@ -6,6 +6,7 @@ import * as normalD from './Animation/D_format/normal.js';
 import * as normalCB from './Animation/CB_format/normal.js';
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
+import * as theme from '../UI/theme.js';
 import * as update from './register.js';
 import * as fullScreen from '../UI/fullscreen.js'
 
@@ -24,6 +25,7 @@ let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của
 // Register storage (if not already declared)
 let registers = Array(32).fill(0); // 32 registers, all initialized to 0
 let memory = Array(100000).fill(0); 
+let componentInputCounter = {};
 // Function to execute format command and update registers
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
@@ -51,38 +53,6 @@ function renderRegisterTable() {
     container.innerHTML = html;
 }
 
-function toggleLight(id) {
-    const circle = document.getElementById(id);
-    if (circle.getAttribute('visibility') === 'hidden') {
-        circle.setAttribute('visibility', 'visible');
-    } else {
-        circle.setAttribute('visibility', 'hidden');
-    }
-}
-
-export const addAnimationEndActions = {
-    'anim-1': () => toggleLight('lightCircle-pc'),
-    'anim-11': () => toggleLight('lightCircle-muxregwritedest-top'),
-    'anim-18': () => toggleLight('lightCircle-muxregwritedest-bottom'),
-    'anim-40': () => {
-        //toggleLight('lightCircle-muxregwritedest-top')
-        //toggleLight('lightCircle-muxregwritedest-bottom')
-    },
-    'anim-28': () => toggleLight('lightCircle-muxalusrc-bottom'),
-    'anim-26': () => toggleLight('lightCircle-muxalusrc-bottom'),
-    'anim-30': () => toggleLight('lightCircle-alu-top'),
-    'anim-37': () => toggleLight('lightCircle-alu-top'),
-    'anim-35': () => toggleLight('lightCircle-muxwriteback-top'),
-    'anim-34': () => toggleLight('lightCircle-muxwriteback-top'),
-    'anim-8': () => toggleLight('lightCircle-addbranch-top'),
-    'anim-38': () => toggleLight('lightCircle-addbranch-top'),
-    'anim-2': () => toggleLight('lightCircle-muxpcsrc-top'),
-    'anim-39': () => toggleLight('lightCircle-muxpcsrc-top'),
-    'anim-47': () => toggleLight('lightCircle-flags-top'),
-    'anim-31': () => toggleLight('lightCircle-flags-top'),
-};
-
-
 // Hàm chuyển đổi giá trị 'dur' (vd: "1.5s", "500ms") sang milliseconds
 function parseDuration(durationString) {
     if (!durationString) return setting.DEFAULT_ANIMATION_DURATION_MS;
@@ -98,184 +68,189 @@ function parseDuration(durationString) {
 }
 
 function triggerAnimation(animId, graph) {
-    if (!graph || !graph[animId] || runningAnimations.has(animId)) {
-        return;
-    }
+    return new Promise((resolve, reject) => {
+        if (!graph || !graph[animId] || runningAnimations.has(animId)) {
+            resolve(); // Nothing to do
+            return;
+        }
+        //console.log(animId);
+        const animData = graph[animId];
+        const nextAnims = animData.next || [];
+        const animationElement = utilUI.getElement(svg, animId);
+        const dotId = animId.replace(/^anim-/, 'dot-');
+        const dotElement = utilUI.getElement(svg, dotId);
 
-    const animData = graph[animId];
-    const nextAnims = animData.next || [];
-    const animationElement = utilUI.getElement(svg, animId);
-    const dotId = animId.replace(/^anim-/, 'dot-');
-    const dotElement = utilUI.getElement(svg, dotId);
-
-    if (!animationElement) {
-        console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
-        return;
-    }
-
-    const durationAttr = animationElement.getAttribute('dur');
-    const durationMs = parseDuration(durationAttr);
-
-    if (dotElement) {
-        dotElement.style.visibility = 'visible';
-    }
-
-    try {
-        animationElement.beginElement();
-        runningAnimations.add(animId);
-
-        const timeoutId = setTimeout(() => {
-            if (dotElement) {
-                utilUI.hideDotForAnim(svg, runningAnimations, animId);
-            } else {
-                runningAnimations.delete(animId);
-            }
-
-            delete activeTimeouts[animId];
-
-            const componentIdToHighlight = setting.animationToComponentHighlight[animId];
-            if (componentIdToHighlight) {
-                utilUI.highlightComponent(svg, componentIdToHighlight);
-            }
-
-            const endAction = addAnimationEndActions[animId];
-            if (typeof endAction === 'function') {
-                endAction();
-            }
-
-            nextAnims.forEach(nextAnimId => {
-                triggerAnimation(nextAnimId, graph);
-            });
-
-        }, durationMs);
-
-        activeTimeouts[animId] = timeoutId;
-    } catch (e) {
-        console.error(`Lỗi khi bắt đầu ${animId}:`, e);
-        runningAnimations.delete(animId);
-    }
-}
-
-
-function simulateStep(instruction) {
-    return new Promise((resolve) => {
-        const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
-        lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
-
-        const trimmedLine = instruction.trim();
-        if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
-            outputArea.textContent = JSON.stringify({
-                status: "Bỏ qua dòng trống hoặc chú thích.",
-                instruction: trimmedLine
-            }, null, 2);
-            resolve(); 
+        if (!animationElement) {
+            console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
+            resolve(); // End early
             return;
         }
 
-        let parsedInstruction = null;
-        let rawLine = trimmedLine;
-        let result = format.parseRFormatInstruction(trimmedLine);
-        console.log("result", result);
-        if (result && result.error) {
-            parsedInstruction = result;
-        } else if (!result) {
-            parsedInstruction = {
-                error: true,
-                message: "Lệnh không nhận dạng được.",
-                raw: trimmedLine
-            };
-        } else {
-            parsedInstruction = result;
+        const durationAttr = animationElement.getAttribute('dur');
+        const durationMs = parseDuration(durationAttr);
+
+        if (dotElement) {
+            dotElement.style.visibility = 'visible';
         }
 
-        let outputJson = {};
+        try {
+            animationElement.beginElement();
+            runningAnimations.add(animId);
 
-        if (parsedInstruction.error) {
-            outputJson = {
-                status: "Lỗi: " + parsedInstruction.message,
-                instruction: parsedInstruction.raw
-            };
-            console.error("Lỗi phân tích:", parsedInstruction.message, "trên dòng:", parsedInstruction.raw);
-        } else {
-            outputJson = {
-                status: `Đang mô phỏng lệnh ${parsedInstruction.type || 'Unknown'}-Format`,
-                details: parsedInstruction
-            };
+            const timeoutId = setTimeout(async () => {
+                if (dotElement) {
+                    utilUI.hideDotForAnim(svg, runningAnimations, animId);
+                } else {
+                    runningAnimations.delete(animId);
+                }
 
-            let instructionGraph = null;
-            const initialAnims = ['anim-3'];
+                delete activeTimeouts[animId];
 
-            executeFormat(parsedInstruction);
-            if (parsedInstruction.type === 'R') {
-                instructionGraph = normalR.animation();
-            } else if (parsedInstruction.type === 'D') {
-                instructionGraph = normalD.animation();
-                // TODO: executeDFormat(parsedInstruction); // Nếu có
-            } else if (parsedInstruction.type === 'CB') {
-                instructionGraph = normalCB.animation();
-            } else if (parsedInstruction.type === 'B') {
-                // instructionGraph = normalB.animation();
-            }
+                const componentIdToHighlight = setting.animationToComponentHighlight[animId];
+                if (!componentInputCounter[componentIdToHighlight]) {
+                    componentInputCounter[componentIdToHighlight] = 0;
+                }
+                ++componentInputCounter[componentIdToHighlight];
+                if (componentIdToHighlight == 'mux3') {
+                    console.log(componentInputCounter[componentIdToHighlight]);
+                }
+                const endAction = normalR.addAnimationEndActions[animId];
+                if (typeof endAction === 'function') {
+                    endAction();
+                }
+                if (componentInputCounter[componentIdToHighlight] >= (setting.componentInputRequirements[componentIdToHighlight] || 0)) {
+                    // console.log("componentIDHighligh: ", componentIdToHighlight);
+                    if (componentIdToHighlight) {
+                        utilUI.highlightComponent(svg, componentIdToHighlight);
+                    }
 
-            if (instructionGraph && initialAnims.length > 0) {
-                initialAnims.forEach(startAnimId => {
-                    triggerAnimation(startAnimId, instructionGraph);
-                });
-                outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${parsedInstruction.opcode || parsedInstruction.type}`;
-            } else {
-                console.warn(`Không có đồ thị hoạt ảnh nào cho lệnh: ${rawLine}`);
-                outputJson.status = "Không có đồ thị hoạt ảnh cụ thể cho lệnh này.";
-            }
+                    // const endAction = normalR.addAnimationEndActions[animId];
+                    // if (typeof endAction === 'function') {
+                    //     endAction();
+                    // }
+                    componentInputCounter[componentIdToHighlight] = 0;
+                    await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph)));
+                }
+                // console.log("componentIDHighligh: ", componentIdToHighlight);
+                // if (componentIdToHighlight) {
+                //     utilUI.highlightComponent(svg, componentIdToHighlight);
+                // }
+
+                // const endAction = normalR.addAnimationEndActions[animId];
+                // if (typeof endAction === 'function') {
+                //     endAction();
+                // }
+
+                // // Wait for all next animations to finish
+                // await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph)));
+
+                resolve(); // Finish this one only after all children finish
+            }, durationMs);
+
+            activeTimeouts[animId] = timeoutId;
+        } catch (e) {
+            console.error(`Lỗi khi bắt đầu ${animId}:`, e);
+            runningAnimations.delete(animId);
+            resolve(); // Fail-safe
         }
-
-        outputArea.textContent = JSON.stringify(outputJson, null, 2);
-
-        setTimeout(() => {
-            resolve();
-        }, 12100); // Delay đảm bảo mô phỏng hoàn thành
     });
 }
 
-// // --- **** START: Theme Toggle Functionality **** ---
-function applyTheme(theme) {
-    if (theme === 'dark') {
-        document.body.classList.add('dark-theme');
-        if(themeToggleButton) themeToggleButton.textContent = '☀️'; // Sun icon for dark theme
-    } else {
-        document.body.classList.remove('dark-theme');
-        if(themeToggleButton) themeToggleButton.textContent = '🌓'; // Moon icon for light theme
-    }
-}
+async function simulateStep(instruction) {
+    const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
+    lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
 
-function toggleTheme() {
-    let currentTheme = localStorage.getItem('theme') || 'light';
-    let newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme);
+    const trimmedLine = instruction.trim();
+    if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
+        outputArea.textContent = JSON.stringify({
+            status: "Bỏ qua dòng trống hoặc chú thích.",
+            instruction: trimmedLine
+        }, null, 2);
+        return;
+    }
+
+    let parsedInstruction = null;
+    let result = format.parseRFormatInstruction(trimmedLine);
+
+    if (result?.error) {
+        parsedInstruction = result;
+    } else if (!result) {
+        parsedInstruction = {
+            error: true,
+            message: "Lệnh không nhận dạng được.",
+            raw: trimmedLine
+        };
+    } else {
+        parsedInstruction = result;
+    }
+
+    let outputJson = {};
+
+    if (parsedInstruction.error) {
+        outputJson = {
+            status: "Lỗi: " + parsedInstruction.message,
+            instruction: parsedInstruction.raw
+        };
+        outputArea.textContent = JSON.stringify(outputJson, null, 2);
+        return;
+    }
+
+    outputJson = {
+        status: `Đang mô phỏng lệnh ${parsedInstruction.type || 'Unknown'}-Format`,
+        details: parsedInstruction
+    };
+
+    let instructionGraph = null;
+    const initialAnims = ['anim-3'];
+
+    executeFormat(parsedInstruction);
+    if (parsedInstruction.type === 'R') {
+        instructionGraph = normalR.animation();
+    } else if (parsedInstruction.type === 'D') {
+        instructionGraph = normalD.animation();
+    } else if (parsedInstruction.type === 'CB') {
+        instructionGraph = normalCB.animation();
+    }
+
+    if (instructionGraph && initialAnims.length > 0) {
+        let completed = 0;
+        outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${parsedInstruction.opcode || parsedInstruction.type}`;
+        outputArea.textContent = JSON.stringify(outputJson, null, 2);
+        await Promise.all(
+            initialAnims.map(startAnimId =>
+                triggerAnimation(startAnimId, instructionGraph)
+            )
+        );
+
+    } else {
+        outputJson.status = "Không có đồ thị hoạt ảnh cụ thể cho lệnh này.";
+        outputArea.textContent = JSON.stringify(outputJson, null, 2);
+    }
+
 }
 
 // Load saved theme on startup
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light
-    applyTheme(savedTheme);
+    theme.applyTheme(savedTheme, themeToggleButton);
 });
-// --- **** END: Theme Toggle Functionality **** ---
 
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
-            utilUI.hideAllDots(svg);
-            utilUI.removeAllHighlights(svg);
-
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
             });
-
+            console.log(instructions);
             for (let instruction of instructions) {
+                utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
+                utilUI.hideAllDots(svg);
+                utilUI.removeAllHighlights(svg);
+                componentInputCounter = {};
                 console.log(instruction);
                 await simulateStep(instruction);  // Wait for animation to finish
+                console.log("finish instruction");
             }
         });
     } else {
@@ -283,7 +258,7 @@ window.addEventListener('load', () => {
     }
 
     if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', toggleTheme);
+        themeToggleButton.addEventListener('click', () => theme.toggleTheme(localStorage, themeToggleButton));
     } else {
         console.error("Theme toggle button not found!");
     }
@@ -301,10 +276,9 @@ window.addEventListener('load', () => {
             }
         } else if ((event.key === 't' || event.key === 'T') && event.target.tagName !== 'TEXTAREA') {
             if (themeToggleButton && theme) { // Kiểm tra theme
-                theme.toggleTheme(themeToggleButton);
+                theme.toggleTheme(localStorage, themeToggleButton);
             }
         }
     });
     console.log("Global event listeners initialized.");
 });
-// --- END OF FILE general.js ---

@@ -16,8 +16,8 @@ export const animationToComponentHighlight = {
     'anim-21': 'registers',         // ReadReg2 address arrives
     'anim-36': 'registers', 
     
-    'anim-11': 'mux-reg-dest',      // Inst bits arrive at WriteReg Mux selector (if applicable)
-    'anim-18': 'mux-reg-dest',      // Control Signal (Reg2Loc?) arrives at Mux
+    'anim-11': 'mux1',      // Inst bits arrive at WriteReg Mux selector (if applicable)
+    'anim-18': 'mux1',      // Control Signal (Reg2Loc?) arrives at Mux
     
     'anim-23': 'alu-control',       // Instruction func/op bits arrive at ALU Control
     'anim-49': 'alu-control',       // ALUOp signal arrives at ALU Control
@@ -27,9 +27,9 @@ export const animationToComponentHighlight = {
     'anim-37': 'alu',
     'anim-56': 'alu',
 
-    'anim-26': 'mux-alu-src',       // Sign-extended immediate arrives at Mux ALU Src input 1
-    'anim-28': 'mux-alu-src',
-    'anim-48': 'mux-alu-src',       // ALUSrc control signal arrives
+    'anim-26': 'mux2',       // Sign-extended immediate arrives at Mux ALU Src input 1
+    'anim-28': 'mux2',
+    'anim-48': 'mux2',       // ALUSrc control signal arrives
     
     'anim-29': 'data-memory',       // ReadData2 arrives at Data Memory Write Data input
     'anim-33': 'data-memory',
@@ -58,14 +58,14 @@ export const animationToComponentHighlight = {
     'anim-54': 'or-gate-branch',    // Result from FlagBranch AND arrives
     'anim-41': 'or-gate-branch',    // UncondBranch control signal arrives
     
-    'anim-53': 'mux-pc-src',        // Branch taken signal arrives at Mux PC Src selector
-    'anim-2': 'mux-pc-src',         // PC+4 arrives at Mux PC Src input 0
-    'anim-39': 'mux-pc-src',        // Branch target address arrives at Mux PC Src input 1
+    'anim-53': 'mux4',        // Branch taken signal arrives at Mux PC Src selector
+    'anim-2': 'mux4',         // PC+4 arrives at Mux PC Src input 0
+    'anim-39': 'mux4',        // Branch target address arrives at Mux PC Src input 1
 
     // Writeback Stage
-    'anim-35': 'mux-writeback',     // Data from Memory arrives at Mux Writeback input 1
-    'anim-34': 'mux-writeback',     // ALU result arrives at Mux Writeback input 0
-    'anim-45': 'mux-writeback',     // MemToReg control signal arrives
+    'anim-35': 'mux3',     // Data from Memory arrives at Mux Writeback input 1
+    'anim-34': 'mux3',     // ALU result arrives at Mux Writeback input 0
+    'anim-45': 'mux3',     // MemToReg control signal arrives
     'anim-13': 'registers',
     'anim-19': 'registers',
     'anim-36': 'registers',         // Data from Mux Writeback arrives at Register Write Data input
@@ -77,4 +77,10 @@ export const animationToComponentHighlight = {
 
     // Control signals arriving at destinations
     'anim-47': 'flags',             // FlagWrite control signal arrives
+};
+export const componentInputRequirements = {
+    "mux1": 2,
+    "mux2": 2,
+    "mux3": 2,
+    "mux4": 2
 };

@@ -9,10 +9,9 @@ export function applyTheme(theme, themeToggleButton) {
     }
 }
 
-export function toggleTheme(themeToggleButton) {
+export function toggleTheme(localStorage, themeToggleButton) {
     let currentTheme = localStorage.getItem('theme') || 'light';
     let newTheme = currentTheme === 'light' ? 'dark' : 'light';
     localStorage.setItem('theme', newTheme);
-    applyTheme(newTheme);
-    // console.log("Theme toggled to:", newTheme);
+    applyTheme(newTheme, themeToggleButton);
 }
