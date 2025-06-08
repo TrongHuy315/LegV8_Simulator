@@ -30,14 +30,14 @@ export function animation() {
         'anim-27': { next: ['anim-28'] },
         'anim-28': { next: ['anim-37'] },
         'anim-29': { next: [] },
-        'anim-30': { next: ['anim-32', 'anim-51'] },
-        'anim-31': { next: [] },
+        'anim-30': { next: ['anim-31', 'anim-32', 'anim-51'] },
+        'anim-31': { next: ['anim-55'] },
         'anim-32': { next: ['anim-34'] },
         'anim-33': { next: [] },
         'anim-34': { next: ['anim-36'] },
         'anim-35': { next: [] },
         'anim-36': { next: [] },
-        'anim-37': { next: ['anim-32', 'anim-51'] },
+        'anim-37': { next: ['anim-31', 'anim-32', 'anim-51'] },
         'anim-38': { next: [] },
         'anim-39': { next: ['anim-1'] },
         'anim-40': { next: ['anim-21'] },
@@ -56,7 +56,7 @@ export function animation() {
         'anim-53': { next: ['anim-1'] },
         'anim-54': { next: ['anim-53'] },
         'anim-55': { next: ['anim-54'] },
-        'anim-56': { next: ['anim-51', 'anim-32'] },
+        'anim-56': { next: ['anim-31', 'anim-51', 'anim-32'] },
     };
 }
 
@@ -71,6 +71,6 @@ export const animationEndActions = {
     // 'anim-37': () => toggleLight('lightCircle-alu-top'),
     //'anim-8': () => toggleLight('lightCircle-addbranch-top'),
     //'anim-38': () => toggleLight('lightCircle-addbranch-bottom'),
-    'anim-47': () => toggleLight('lightCircle-flags-top'),
+    'anim-47': () => toggleLight('lightCircle-flags-bottom'),
     'anim-31': () => toggleLight('lightCircle-flags-top'),
 };

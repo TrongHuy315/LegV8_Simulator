@@ -1,5 +1,3 @@
-import * as format from '../format/format.js' // Và các module parse khác nếu cần
-
 export function RFormat(parsedInstruction, registers, memory) {
     const { opcode, rd, rn, rm, shamt } = parsedInstruction;
     switch (opcode) {

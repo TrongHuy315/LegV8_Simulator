@@ -107,7 +107,7 @@ function triggerAnimation(animId, graph, opcode) {
                         componentInputCounter[component] = 0;
                     }
                 }
-                const endAction = utilUI.calculateEndAction(opcode, animId); 
+                let endAction = utilUI.calculateEndAction(opcode, animId); 
                 if (typeof endAction === 'function') {
                     endAction();
                 }
@@ -143,6 +143,7 @@ function triggerAnimation(animId, graph, opcode) {
     });
 }
 
+let label = null;
 async function simulateStep(instruction) {
     const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
     lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
@@ -162,9 +163,13 @@ async function simulateStep(instruction) {
     //     return;
     // }
 
-    let result = format.parseRFormatInstruction(instruction);
-    let parsedInstruction = utilUI.calParseInstruction(result);
-
+    let result = format.parseFormatInstruction(instruction);
+    let parsedInstruction = utilUI.calparseFormatInstruction(result);
+    if (label != null) {
+        if (!parsedInstruction.label) return;
+        if (parsedInstruction.label != label) return;
+    }
+    console.log(parsedInstruction);
     let outputJson = {};
     if (parsedInstruction.error) {
         outputJson = {
@@ -184,8 +189,20 @@ async function simulateStep(instruction) {
     
     executeFormat(parsedInstruction);
     let opcode = parsedInstruction.opcode;
-    let instructionGraph = utilUI.calculateGraph(opcode);
-    console.log(opcode);
+    let branch = false;
+    if (opcode === 'CBZ') {
+        if (registers[+parsedInstruction.rt] == 0) {
+            branch = true;
+            label = parsedInstruction.label;
+        }
+    }
+    else if (opcode === 'CBNZ') {
+        if (registers[+parsedInstruction.rt] != 0) {
+            branch = true;
+            label = parsedInstruction.label;
+        }
+    }
+    let instructionGraph = utilUI.calculateGraph(opcode, branch);
     if (instructionGraph && initialAnims.length > 0) {
         outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${opcode || parsedInstruction.type}`;
         outputArea.textContent = JSON.stringify(outputJson, null, 2);

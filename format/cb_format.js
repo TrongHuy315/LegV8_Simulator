@@ -1,9 +1,10 @@
-export const CB_FORMAT_OPCODES = ['CBZ']
+export const CB_FORMAT_OPCODES = ['CBZ', 'CBNZ']; 
+
 export function convert(line, CBFormaxRegex) {
     let match = line.match(CBFormaxRegex);
     const opcode = match[1].toUpperCase(); 
     const rt = parseInt(match[2], 10); 
-    const offset = parseInt(match[3], 10); 
+    const label = match[3]; 
 
     if (rt > 31) {
         return { 
@@ -16,8 +17,8 @@ export function convert(line, CBFormaxRegex) {
     return {
         type: 'CB', 
         opcode: opcode, 
-        rt: rt,
-        offset: offset,
+        rt: rt, 
+        label: label, 
         raw: line 
     };
 }

@@ -1,4 +1,4 @@
-export const I_FORMAT_OPCODES = ['ADDI', 'SUBI', 'ANDI', 'ORRI', 'EORI'];
+export const I_FORMAT_OPCODES = ['ADDI', 'SUBI', 'ANDI', 'ORRI', 'EORI', 'ADDIS', 'SUBIS'];
 export function convert(line, rFormatRegex) {
     let match = line.match(rFormatRegex);
     const opcode = match[1].toUpperCase(); 

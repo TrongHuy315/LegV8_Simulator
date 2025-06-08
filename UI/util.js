@@ -1,8 +1,12 @@
 import * as setting from '../setting/setting.js'
 import * as normalR from '../script/Animation/R_format/normal.js';
+import * as flagR from '../script/Animation/R_format/addFlag.js';
+import * as flagI from '../script/Animation/I_format/addFlag.js';
 import * as normalI from '../script/Animation/I_format/normal.js';
 import * as ldur from '../script/Animation/D_format/ldur.js';
 import * as stur from '../script/Animation/D_format/stur.js';
+import * as CBZ_NotBranch from '../script/Animation/CB_format/CBZ_notBranch.js';
+import * as CBZ_Branch from '../script/Animation/CB_format/CBZ_Branch.js';
 
 // Hàm tiện ích để lấy phần tử SVG bằng ID (An toàn hơn)
 export function getElement(svg, id) {
@@ -104,22 +108,7 @@ export function toggleLight(id) {
     }
 }
 
-export function calculateEndAction(opcode, animId) {
-    let endAction = null;
-    if (opcode === 'ADD' || opcode === 'ORR' || opcode === 'SUB' || opcode === 'EOR' || opcode === 'AND') {
-        endAction = normalR.animationEndActions;
-    }
-    else if(opcode === 'ADDI' || opcode === 'ORRI' || opcode === 'SUBI' || opcode === 'EORI' || opcode === 'ANDI') {
-        endAction = normalI.animationEndActions;
-    }
-    else if (opcode === 'LDUR' || opcode === 'STUR') {
-        if (opcode === 'LDUR') endAction = ldur.animationEndActions;
-        else endAction = stur.animationEndActions;
-    }
-    return endAction[animId];
-}
-
-export function calParseInstruction(result) {
+export function calparseFormatInstruction(result) {
     let parsedInstruction = null;
     if (result?.error) {
         parsedInstruction = result;
@@ -135,7 +124,32 @@ export function calParseInstruction(result) {
     return parsedInstruction;
 }
 
-export function calculateGraph(opcode) {
+export function calculateEndAction(opcode, animId, branch = false) {
+    let endAction = null;
+    if (opcode === 'ADD' || opcode === 'ORR' || opcode === 'SUB' || opcode === 'EOR' || opcode === 'AND') {
+        endAction = normalR.animationEndActions;
+    }
+    else if(opcode === 'ADDI' || opcode === 'ORRI' || opcode === 'SUBI' || opcode === 'EORI' || opcode === 'ANDI') {
+        endAction = normalI.animationEndActions;
+    }
+    else if (opcode === 'ADDS' || opcode === 'SUBS') {
+        endAction = flagR.animationEndActions;
+    }
+    else if (opcode === 'ADDIS' || opcode === 'SUBIS') {
+        endAction = flagI.animationEndActions;
+    }
+    else if (opcode === 'LDUR' || opcode === 'STUR') {
+        if (opcode === 'LDUR') endAction = ldur.animationEndActions;
+        else endAction = stur.animationEndActions;
+    }
+    else if (opcode === 'CBZ' || opcode === 'CBNZ') {
+        if (branch) endAction = CBZ_Branch.animationEndActions;
+        else endAction = CBZ_NotBranch.animationEndActions;
+    }
+    return endAction[animId];
+}
+
+export function calculateGraph(opcode, branch = false) {
     let instructionGraph = null;
     if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'ORR' || opcode === 'EOR' || opcode === 'AND') {
         instructionGraph = normalR.animation();
@@ -143,9 +157,18 @@ export function calculateGraph(opcode) {
     else if (opcode === 'ADDI' || opcode === 'SUBI' || opcode === 'ORRI' || opcode === 'EORI' || opcode === 'ANDI') {
         instructionGraph = normalI.animation();
     }
+    else if (opcode === 'ADDS' || opcode === 'SUBS') {
+        instructionGraph = flagR.animation();
+    }
+    else if (opcode === 'ADDIS' || opcode === 'SUBIS') {
+        instructionGraph = flagI.animation();
+    }
     else if (opcode === 'LDUR' || opcode === 'STUR') {
         if (opcode === 'LDUR') instructionGraph = ldur.animation();
         else instructionGraph = stur.animation();
+    }
+    else if (opcode === 'CBZ' || opcode === 'CBNZ') {
+        instructionGraph = branch ? CBZ_Branch.animation() : CBZ_NotBranch.animation();
     }
     return instructionGraph;
 }
@@ -164,6 +187,12 @@ export function calRequirements(opcode) {
     ) {
         cnt = [1, 999, 2, 3];
     }
+    else if (opcode === 'ADDS' || opcode === 'SUBS') {
+        cnt = [2, 999, 2, 3];
+    }
+    else if (opcode === 'ADDIS' || opcode === 'SUBIS') {
+        cnt = [2, 999, 2, 3];
+    }
     else if (opcode === 'LDUR' || opcode === 'STUR') { // D-format
         if (opcode === 'LDUR') {
             cnt = [1, 3, 1, 3];
@@ -172,8 +201,11 @@ export function calRequirements(opcode) {
             cnt = [1, 999, 1, 3];
         }
     }
+    else if (opcode === 'CBZ' || opcode === 'CBNZ') {
+        cnt = [1, 999, 1, 2]
+    }
     else {
-        cnt [0, 0, 0, 0];
+        cnt = [1, 2, 2, 2];
     }
     for(let i = 0; i < additionComponent.length; i++) {
         requirements[additionComponent[i]] = cnt[i];
