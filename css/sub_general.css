@@ -422,4 +422,135 @@ body {
     /* transition: opacity 0.2s ease-in-out; /* Tùy chọn: Thêm hiệu ứng fade nếu dùng opacity để hiện/ẩn */
 }
 
+/* --- START: Data Display (Registers & Memory) Styles --- */
+#data-display-container {
+    display: flex;
+    width: 100%;
+    max-width: 1500px; /* Giống với #simulation-container để căn chỉnh */
+    gap: 30px; /* Giống với #simulation-container */
+    align-items: stretch;
+    margin-top: 30px; /* Khoảng cách với container bên trên */
+    box-sizing: border-box;
+}
+
+.data-panel {
+    flex: 1; /* Chia đều không gian cho 2 panel */
+    min-width: 0;
+    padding: 20px;
+    background-color: var(--controls-bg); /* Tái sử dụng màu nền của panel điều khiển */
+    border: 1px solid var(--controls-border); /* Tái sử dụng border */
+    border-radius: 12px; /* Tái sử dụng bo góc */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+
+.data-panel h3 {
+    margin: 0 0 5px 0;
+    padding-bottom: 10px;
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--controls-label-color);
+    border-bottom: 1px solid var(--controls-border);
+    transition: color 0.5s ease, border-color 0.5s ease;
+}
+
+#register-table-container,
+#memory-table-container {
+    overflow-y: auto; /* Cho phép cuộn nếu nội dung quá dài */
+    flex-grow: 1;
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+}
+
+/* --- Register Grid Styles --- */
+.register-grid {
+    display: grid;
+    /* 4 cột, mỗi cột bao gồm tên và giá trị */
+    grid-template-columns: repeat(2, 1fr 1fr);
+    gap: 8px 20px; /* Khoảng cách hàng và cột */
+}
+
+.register-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.reg-name {
+    font-weight: 500;
+    background-color: var(--component-fill);
+    color: var(--label-fill);
+    padding: 3px 7px;
+    border-radius: 4px;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.reg-value {
+    color: var(--wire-blue-stroke); /* Tái sử dụng màu của dây control */
+    transition: color 0.5s ease;
+}
+
+/* --- Memory Table Styles --- */
+.memory-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.memory-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--editor-border); /* Dùng border của editor cho mờ nhạt */
+}
+
+.mem-address {
+    font-weight: 500;
+    background-color: var(--component-fill);
+    color: var(--label-fill);
+    padding: 3px 7px;
+    border-radius: 4px;
+    display: inline-block; /* Để padding có hiệu lực */
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.mem-value {
+    color: var(--wire-blue-stroke);
+    text-align: right;
+    transition: color 0.5s ease;
+}
+
+/* --- Format Toggle Button Styles --- */
+.format-toggle {
+    margin-bottom: 10px;
+}
+
+.format-toggle button {
+    border: 1px solid var(--overlay-button-border);
+    background-color: transparent;
+    color: var(--overlay-button-text);
+    padding: 4px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 12px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.format-toggle button:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.format-toggle button:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: none;
+}
+
+.format-toggle button.active {
+    background-color: var(--wire-blue-stroke);
+    color: var(--svg-bg); /* Màu nền của svg để có độ tương phản cao */
+    border-color: var(--wire-blue-stroke);
+}
+/* --- END: Data Display (Registers & Memory) Styles --- */
+
 /* --- END OF FILE sub_general.css --- */
