@@ -39,9 +39,13 @@ let displayState = {
 
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
+    let memoryChanged = false;
     for (let formatKey in format.FORMAT_OPCODES) {
         const formats = format.FORMAT_OPCODES[formatKey];
         if (formats.opcode.includes(parsedInstruction.opcode)) {
+            if (formatKey === "D_FORMAR") {
+                memoryChanged = update.DFormat(parsedInstruction, registers, memory);
+            }
             formats.update(parsedInstruction, registers, memory);
             break;
         }
@@ -172,6 +176,7 @@ async function simulateStep(instruction) {
     if (label != null) {
         if (!parsedInstruction.label) return;
         if (parsedInstruction.label != label) return;
+        label = null;
     }
     console.log(parsedInstruction);
     let outputJson = {};
