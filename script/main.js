@@ -5,6 +5,8 @@ import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as theme from '../UI/theme.js';
 import * as fullScreen from '../UI/fullscreen.js';
+import * as editor from './editor.js'
+import * as regmemtable from './reg_mem_table.js'
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -13,6 +15,11 @@ const outputArea = document.getElementById('json-output');
 const svg = document.querySelector('svg'); // Cần kiểm tra svg có tồn tại không trước khi dùng
 const themeToggleButton = document.getElementById('theme-toggle-button'); // *** ADDED ***
 const simulationContainer = document.getElementById('simulation-container'); // *** ADDED for fullscreen ***
+const lineNumbersElement = document.getElementById('lineNumbers');
+
+const registerTableContainer = document.getElementById('register-table-container');
+const memoryTableContainer = document.getElementById('memory-table-container');
+const dataDisplayContainer = document.getElementById('data-display-container');
 
 // --- Trạng thái Hoạt ảnh Không Đồng Bộ ---
 let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
@@ -22,6 +29,12 @@ let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của
 let registers = Array(32).fill(0); // 32 registers, all initialized to 0
 let memory = Array(100000).fill(0); 
 let componentInputCounter = {};
+
+let displayState = {
+    registerFormat: 'hex',
+    memoryFormat: 'hex'
+};
+
 // Function to execute format command and update registers
 
 function executeFormat(parsedInstruction) {
@@ -33,22 +46,13 @@ function executeFormat(parsedInstruction) {
             break;
         }
     }
-    renderRegisterTable(); // Update the register table UI if you have this function
-}
-
-// Function to render the register table (if not already present)
-function renderRegisterTable() {
-    const container = document.getElementById('register-table');
-    if (!container) return;
-    let html = '<table><tr><th>Register</th><th>Value</th></tr>';
-    for (let i = 0; i < 32; i++) {
-        html += `<tr><td>X${i}</td><td>${registers[i]}</td></tr>`;
+    
+    regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
+    if (memoryChanged) {
+        regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
     }
-    html += '</table>';
-    container.innerHTML = html;
 }
 
-// Hàm chuyển đổi giá trị 'dur' (vd: "1.5s", "500ms") sang milliseconds
 function parseDuration(durationString) {
     if (!durationString) return setting.DEFAULT_ANIMATION_DURATION_MS;
     const lowerCase = durationString.toLowerCase().trim();
@@ -255,6 +259,39 @@ window.addEventListener('load', () => {
 
     if(outputArea) {
         outputArea.textContent = JSON.stringify({ message: "Ready. Enter LEGv8 code. Shortcuts: (R)eset Zoom, (T)heme, F11 Fullscreen" }, null, 2);
+    }
+
+    if (instructionEditor) {
+        // Cập nhật số dòng khi có bất kỳ thay đổi nào (gõ, dán, cắt)
+        instructionEditor.addEventListener('input', () => {
+            editor.updateLineNumbers(instructionEditor, lineNumbersElement)
+        });
+
+        // Đồng bộ cuộn giữa editor và thanh số dòng
+        instructionEditor.addEventListener('scroll', () => {
+            if (lineNumbersElement) {
+                lineNumbersElement.scrollTop = instructionEditor.scrollTop;
+            }
+        });
+
+        // Gọi lần đầu tiên khi tải trang để hiển thị số dòng ban đầu
+        editor.updateLineNumbers(instructionEditor, lineNumbersElement); 
+    }
+
+    if (registerTableContainer && memoryTableContainer) {
+        // Gọi hàm render và truyền các tham số cần thiết
+        regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
+        regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
+        
+        // Gọi hàm setup listener và truyền các tham số cần thiết
+        regmemtable.setupToggleListeners(
+            dataDisplayContainer, 
+            displayState, 
+            registers, 
+            memory, 
+            registerTableContainer, 
+            memoryTableContainer
+        );
     }
 
     // --- KEYBOARD SHORTCUTS ---
