@@ -1,3 +1,4 @@
+export const CB_FORMAT_OPCODES = ['CBZ']
 export function convert(line, CBFormaxRegex) {
     let match = line.match(CBFormaxRegex);
     const opcode = match[1].toUpperCase(); 

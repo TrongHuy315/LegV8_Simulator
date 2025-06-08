@@ -1,6 +1,6 @@
 import * as format from '../format/format.js' // Và các module parse khác nếu cần
 
-export function RFormat(parsedInstruction, registers) {
+export function RFormat(parsedInstruction, registers, memory) {
     const { opcode, rd, rn, rm, shamt } = parsedInstruction;
     switch (opcode) {
         case 'ADD':
@@ -15,7 +15,7 @@ export function RFormat(parsedInstruction, registers) {
         case 'OR':
             registers[rd] = registers[rn] | registers[rm];
             break;
-        case 'XOR':
+        case 'EOR':
             registers[rd] = registers[rn] ^ registers[rm];
             break;
         case 'LSL':
@@ -41,6 +41,31 @@ export function DFormat(parsedInstruction, registers, memory) {
             memory[address] = registers[rd];
             break;
         default:
+            break;
+    }
+}
+
+export function IFormat(parsedInstruction, registers, memory) {
+    const { opcode, rd, rn, imm } = parsedInstruction;
+
+    switch (opcode) {
+        case 'ADDI':
+            registers[rd] = registers[rn] + imm; 
+            break;
+        case 'SUBI':
+            registers[rd] = registers[rn] - imm; 
+            break;
+        case 'ANDI':
+            registers[rd] = registers[rn] & imm; 
+            break;
+        case 'ORRI':
+            registers[rd] = registers[rn] | imm; // Bitwise OR with immediate value
+            break;
+        case 'EORI':
+            registers[rd] = registers[rn] ^ imm; // Bitwise EOR with immediate value
+            break;
+        default:
+            console.error(`Unsupported I-format opcode: ${opcode}`);
             break;
     }
 }

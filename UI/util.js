@@ -1,4 +1,8 @@
 import * as setting from '../setting/setting.js'
+import * as normalR from '../script/Animation/R_format/normal.js';
+import * as normalI from '../script/Animation/I_format/normal.js';
+import * as ldur from '../script/Animation/D_format/ldur.js';
+import * as stur from '../script/Animation/D_format/stur.js';
 
 // Hàm tiện ích để lấy phần tử SVG bằng ID (An toàn hơn)
 export function getElement(svg, id) {
@@ -24,10 +28,9 @@ export function hideDotForAnim(svg, runningAnimations, animId) {
     if (dot) {
         dot.style.visibility = 'hidden';
     }
-    runningAnimations.delete(animId); // Xóa khỏi tập đang chạy
-    // // console.log(`Đã ẩn dot và xóa khỏi running: ${animId}`);
+    runningAnimations.delete(animId);
 }
-// Hàm ẩn TẤT CẢ các chấm tròn (để reset)
+
 export function hideAllDots(svg) {
     try {
         const allDots = svg.querySelectorAll('.data-dot');
@@ -36,7 +39,6 @@ export function hideAllDots(svg) {
                  dot.style.visibility = 'hidden';
             }
         });
-        // // console.log("Đã ẩn tất cả các chấm tròn.");
     } catch (e) {
         console.error("Lỗi khi ẩn các chấm tròn:", e);
     }
@@ -46,7 +48,6 @@ export function hideAllDots(svg) {
 export function cancelAllPendingTimeouts(activeTimeouts, runningAnimations) {
      const keys = Object.keys(activeTimeouts);
      if (keys.length > 0) {
-        // console.log("Hủy các timeout đang chờ:", keys.length);
         keys.forEach(animId => {
             clearTimeout(activeTimeouts[animId]);
         });
@@ -92,4 +93,90 @@ export function setMuxSelect(muxId, selected) {
         zero.setAttribute('fill', selected === 0 ? 'red' : 'black');
         one.setAttribute('fill', selected === 1 ? 'red' : 'black');
     }
+}
+
+export function toggleLight(id) {
+    const circle = document.getElementById(id);
+    if (circle.getAttribute('visibility') === 'hidden') {
+        circle.setAttribute('visibility', 'visible');
+    } else {
+        circle.setAttribute('visibility', 'hidden');
+    }
+}
+
+export function calculateEndAction(opcode, animId) {
+    let endAction = null;
+    if (opcode === 'ADD' || opcode === 'ORR' || opcode === 'SUB' || opcode === 'EOR' || opcode === 'AND') {
+        endAction = normalR.animationEndActions;
+    }
+    else if(opcode === 'ADDI' || opcode === 'ORRI' || opcode === 'SUBI' || opcode === 'EORI' || opcode === 'ANDI') {
+        endAction = normalI.animationEndActions;
+    }
+    else if (opcode === 'LDUR' || opcode === 'STUR') {
+        if (opcode === 'LDUR') endAction = ldur.animationEndActions;
+        else endAction = stur.animationEndActions;
+    }
+    return endAction[animId];
+}
+
+export function calParseInstruction(result) {
+    let parsedInstruction = null;
+    if (result?.error) {
+        parsedInstruction = result;
+    } else if (!result) {
+        parsedInstruction = {
+            error: true,
+            message: "Lệnh không nhận dạng được.",
+            raw: trimmedLine
+        };
+    } else {
+        parsedInstruction = result;
+    }
+    return parsedInstruction;
+}
+
+export function calculateGraph(opcode) {
+    let instructionGraph = null;
+    if (opcode === 'ADD' || opcode === 'SUB' || opcode === 'ORR' || opcode === 'EOR' || opcode === 'AND') {
+        instructionGraph = normalR.animation();
+    }
+    else if (opcode === 'ADDI' || opcode === 'SUBI' || opcode === 'ORRI' || opcode === 'EORI' || opcode === 'ANDI') {
+        instructionGraph = normalI.animation();
+    }
+    else if (opcode === 'LDUR' || opcode === 'STUR') {
+        if (opcode === 'LDUR') instructionGraph = ldur.animation();
+        else instructionGraph = stur.animation();
+    }
+    return instructionGraph;
+}
+
+let additionComponent = ["flags", "data-memory", "alu-control", "alu"];
+export function calRequirements(opcode) {
+    let requirements = setting.componentInputRequirements;
+    let cnt;
+    if (opcode === 'ADD' || opcode === 'SUB' || 
+        opcode === 'ORR' || opcode === 'EOR' || opcode === 'AND'
+    ) { // R-format
+        cnt = [1, 999, 2, 3];
+    }
+    else if (opcode === 'ADDI' || opcode === 'SUBI' || 
+        opcode === 'ORRI' || opcode === 'EORI' || opcode === 'ANDI'
+    ) {
+        cnt = [1, 999, 2, 3];
+    }
+    else if (opcode === 'LDUR' || opcode === 'STUR') { // D-format
+        if (opcode === 'LDUR') {
+            cnt = [1, 3, 1, 3];
+        }
+        else {
+            cnt = [1, 999, 1, 3];
+        }
+    }
+    else {
+        cnt [0, 0, 0, 0];
+    }
+    for(let i = 0; i < additionComponent.length; i++) {
+        requirements[additionComponent[i]] = cnt[i];
+    }
+    return requirements;
 }

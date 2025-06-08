@@ -1,3 +1,4 @@
+export const R_FORMAT_OPCODES = ['ADD', 'SUB', 'AND', 'ORR', 'EOR', 'LSL', 'LSR']; // Danh sách các mã lệnh (opcode) R-Format được hỗ trợ
 export function convert(line, rFormatRegex) {
     let match = line.match(rFormatRegex);
     const opcode = match[1].toUpperCase(); 

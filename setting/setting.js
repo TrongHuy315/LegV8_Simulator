@@ -1,6 +1,7 @@
 export const DEFAULT_ANIMATION_DURATION_MS = 1000; // Dự phòng nếu không đọc được 'dur'
 export const HIGHLIGHT_DURATION_MS = 300; // How long the highlight stays (ms)
 export const POST_HIGHLIGHT_HIDE_DELAY_MS = 150;
+
 export const animationToComponentHighlight = {
     // Fetch Stage
     'anim-4': 'instruction-memory', // PC addr arrives at Inst Memory
@@ -48,15 +49,15 @@ export const animationToComponentHighlight = {
     'anim-8': 'add-branch',         // PC+4 (or current PC?) arrives at branch adder
     'anim-38': 'add-branch',        // Shifted offset arrives at branch adder
     
-    'anim-51': 'and-gate-zerobranch',// Zero flag arrives at AND gate
-    'anim-43': 'and-gate-zerobranch',// ZeroBranch control signal arrives
+    'anim-51': 'and-gate2',// Zero flag arrives at AND gate
+    'anim-43': 'and-gate2',// ZeroBranch control signal arrives
     
-    'anim-55': 'and-gate-flagbranch',// Flags (non-zero) arrive
-    'anim-42': 'and-gate-flagbranch',// FlagBranch control signal arrives
+    'anim-55': 'and-gate1',// Flags (non-zero) arrive
+    'anim-42': 'and-gate1',// FlagBranch control signal arrives
     
-    'anim-52': 'or-gate-branch',    // Result from ZeroBranch AND arrives
-    'anim-54': 'or-gate-branch',    // Result from FlagBranch AND arrives
-    'anim-41': 'or-gate-branch',    // UncondBranch control signal arrives
+    'anim-52': 'or-gate',    // Result from ZeroBranch AND arrives
+    'anim-54': 'or-gate',    // Result from FlagBranch AND arrives
+    'anim-41': 'or-gate',    // UncondBranch control signal arrives
     
     'anim-53': 'mux4',        // Branch taken signal arrives at Mux PC Src selector
     'anim-2': 'mux4',         // PC+4 arrives at Mux PC Src input 0
@@ -78,9 +79,16 @@ export const animationToComponentHighlight = {
     // Control signals arriving at destinations
     'anim-47': 'flags',             // FlagWrite control signal arrives
 };
-export const componentInputRequirements = {
+export let componentInputRequirements = {
+    "registers-read1": 1,
+    "registers-read2": 1,
+    "or-gate": 3,
+    "and-gate1": 2,
+    "and-gate2": 2,
+    "add-pc-4": 2,
+    "add-branch": 2,
     "mux1": 2,
     "mux2": 2,
     "mux3": 2,
-    "mux4": 2
+    "mux4": 2,
 };

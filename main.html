@@ -295,9 +295,9 @@
                 <polyline class="wire-blue" points="970,600 810,600"/>
                 <polyline class="wire-blue" points="810,600 810,540"/>
 
-                <g transform="translate(690, 335)"> <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate" id="and-gate-flagbranch"/> </g>
-                <g transform="translate(750, 335)"> <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate" id="and-gate-zerobranch"/> </g>
-                <g transform="translate(810, 235)"> <path d="M 5 0 C 15 0, 30 5, 35 15 C 30 25, 15 30, 5 30 A 5 15 0 0 0 5 0 Z" class="gate" id="or-gate-branch"/> </g>
+                <g transform="translate(690, 335)"> <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate" id="and-gate1"/> </g>
+                <g transform="translate(750, 335)"> <path d="M 15 0 L 15 30 A 15 15 0 0 0 15 0 Z" class="gate" id="and-gate2"/> </g>
+                <g transform="translate(810, 235)"> <path d="M 5 0 C 15 0, 30 5, 35 15 C 30 25, 15 30, 5 30 A 5 15 0 0 0 5 0 Z" class="gate" id="or-gate"/> </g>
                 
                 <!--ZeroBranch-->
                 <polyline class="wire-blue" points="400,267 750,267"/>
@@ -915,19 +915,9 @@
                         visibility="hidden"
                 />
                 <circle id="lightCircle-mux2-turn1"
-                        cx="560" cy="480" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
-                />
-                <circle id="lightCircle-alu-top"
-                        cx="625" cy="400" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
-                />
-                <circle id="lightCircle-alu-bottom"
-                        cx="625" cy="460" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
+                cx="560" cy="480" r="15"
+                fill="url(#glow)"
+                visibility="hidden"
                 />
                 <circle id="lightCircle-mux3-turn1"
                         cx="910" cy="460" r="15"
@@ -939,25 +929,15 @@
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-addbranch-top"
-                        cx="685" cy="140" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
-                />
-                <circle id="lightCircle-addbranch-bottom"
-                        cx="685" cy="180" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
-                />
                 <circle id="lightCircle-mux4-turn0"
                         cx="870" cy="120" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
                 <circle id="lightCircle-mux4-turn1"
-                        cx="870" cy="160" r="15"
-                        fill="url(#glow)"
-                        visibility="hidden"
+                cx="870" cy="160" r="15"
+                fill="url(#glow)"
+                visibility="hidden"
                 />
                 <circle id="lightCircle-flags-top"
                         cx="640" cy="355" r="5"
@@ -969,12 +949,32 @@
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-alucontrol-top"
+                <!-- <circle id="lightCircle-alu-top"
+                cx="625" cy="400" r="15"
+                fill="url(#glow)"
+                        visibility="hidden"
+                />
+                <circle id="lightCircle-alu-bottom"
+                        cx="625" cy="460" r="15"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                /> -->
+                <!-- <circle id="lightCircle-addbranch-top"
+                        cx="685" cy="140" r="15"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                /> -->
+                <!-- <circle id="lightCircle-addbranch-bottom"
+                        cx="685" cy="180" r="15"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                /> -->
+                <!-- <circle id="lightCircle-alucontrol-top"
                         cx="580" cy="560" r="20"
                         fill="url(#glow)"
                         visibility="hidden"
-                />
-                <circle id="lightCircle-and1-bottom"
+                /> -->
+                <!-- <circle id="lightCircle-and1-bottom"
                         cx="710" cy="360" r="5"
                         fill="url(#glow)"
                         visibility="hidden"
@@ -987,14 +987,14 @@
                 <circle id="lightCircle-and2-bottom"
                         cx="770" cy="360" r="5"
                         fill="url(#glow)"
-                        visibility="hidden"
+                        visibility="hidden" -->
                 />
-                <circle id="lightCircle-orr-top"
+                <!-- <circle id="lightCircle-orr-top"
                         cx="825" cy="240" r="5"
                         fill="url(#glow)"
                         visibility="hidden"
-                />
-                <circle id="lightCircle-orr-mid"
+                /> -->
+                <!-- <circle id="lightCircle-orr-mid"
                         cx="830" cy="250" r="5"
                         fill="url(#glow)"
                         visibility="hidden"
@@ -1003,7 +1003,7 @@
                         cx="825" cy="260" r="5"
                         fill="url(#glow)"
                         visibility="hidden"
-                />
+                /> -->
 
             </svg>
         </div> <!-- End svg-container -->

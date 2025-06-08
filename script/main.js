@@ -1,14 +1,10 @@
 // --- START OF FILE general.js ---
 
 import * as format from '../format/format.js' // Và các module parse khác nếu cần
-import * as normalR from './Animation/R_format/normal.js';
-import * as normalD from './Animation/D_format/normal.js';
-import * as normalCB from './Animation/CB_format/normal.js';
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as theme from '../UI/theme.js';
-import * as update from './register.js';
-import * as fullScreen from '../UI/fullscreen.js'
+import * as fullScreen from '../UI/fullscreen.js';
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -27,16 +23,15 @@ let registers = Array(32).fill(0); // 32 registers, all initialized to 0
 let memory = Array(100000).fill(0); 
 let componentInputCounter = {};
 // Function to execute format command and update registers
+
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
-    if (format.R_FORMAT_OPCODES.includes(parsedInstruction.opcode)) {
-        update.RFormat(parsedInstruction, registers);
-    }
-    else if (format.D_format_OPCODES.includes(parsedInstruction.opcode)) {
-        update.DFormat(parseDuration, registers, memory);
-    }
-    else if (format.CB_format_OPCODES.includes(parsedInstruction.opcode)) {
-        update.CBFormat(parsedInstruction, registers, memory);
+    for (let formatKey in format.FORMAT_OPCODES) {
+        const formats = format.FORMAT_OPCODES[formatKey];
+        if (formats.opcode.includes(parsedInstruction.opcode)) {
+            formats.update(parsedInstruction, registers, memory);
+            break;
+        }
     }
     renderRegisterTable(); // Update the register table UI if you have this function
 }
@@ -67,7 +62,7 @@ function parseDuration(durationString) {
     return value * 1000;
 }
 
-function triggerAnimation(animId, graph) {
+function triggerAnimation(animId, graph, opcode) {
     return new Promise((resolve, reject) => {
         if (!graph || !graph[animId] || runningAnimations.has(animId)) {
             resolve(); // Nothing to do
@@ -96,7 +91,7 @@ function triggerAnimation(animId, graph) {
         try {
             animationElement.beginElement();
             runningAnimations.add(animId);
-
+            //console.log("ID: ", animId);
             const timeoutId = setTimeout(async () => {
                 if (dotElement) {
                     utilUI.hideDotForAnim(svg, runningAnimations, animId);
@@ -107,44 +102,36 @@ function triggerAnimation(animId, graph) {
                 delete activeTimeouts[animId];
 
                 const componentIdToHighlight = setting.animationToComponentHighlight[animId];
-                if (!componentInputCounter[componentIdToHighlight]) {
-                    componentInputCounter[componentIdToHighlight] = 0;
+                let checkExists = (component) => {
+                    if (!componentInputCounter[component]) {
+                        componentInputCounter[component] = 0;
+                    }
                 }
-                ++componentInputCounter[componentIdToHighlight];
-                if (componentIdToHighlight == 'mux3') {
-                    console.log(componentInputCounter[componentIdToHighlight]);
-                }
-                const endAction = normalR.addAnimationEndActions[animId];
+                const endAction = utilUI.calculateEndAction(opcode, animId); 
                 if (typeof endAction === 'function') {
                     endAction();
                 }
-                if (componentInputCounter[componentIdToHighlight] >= (setting.componentInputRequirements[componentIdToHighlight] || 0)) {
-                    // console.log("componentIDHighligh: ", componentIdToHighlight);
-                    if (componentIdToHighlight) {
-                        utilUI.highlightComponent(svg, componentIdToHighlight);
-                    }
-
-                    // const endAction = normalR.addAnimationEndActions[animId];
-                    // if (typeof endAction === 'function') {
-                    //     endAction();
-                    // }
-                    componentInputCounter[componentIdToHighlight] = 0;
-                    await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph)));
+                if (componentIdToHighlight) {
+                    utilUI.highlightComponent(svg, componentIdToHighlight);
                 }
-                // console.log("componentIDHighligh: ", componentIdToHighlight);
-                // if (componentIdToHighlight) {
-                //     utilUI.highlightComponent(svg, componentIdToHighlight);
-                // }
-
-                // const endAction = normalR.addAnimationEndActions[animId];
-                // if (typeof endAction === 'function') {
-                //     endAction();
-                // }
-
-                // // Wait for all next animations to finish
-                // await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph)));
-
-                resolve(); // Finish this one only after all children finish
+                let requirements = utilUI.calRequirements(opcode);
+                let input;
+                if (animId === 'anim-13') {
+                    input = 'registers-read1';
+                }
+                else if (animId === 'anim-21') {
+                    input = 'registers-read2';
+                }
+                else {
+                    input = componentIdToHighlight;
+                }
+                checkExists(input);
+                ++componentInputCounter[input];
+                if (componentInputCounter[input] >= (requirements[input] || 0)) {
+                    componentInputCounter[input] = 0;
+                    await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph, opcode)));
+                }
+                resolve(); 
             }, durationMs);
 
             activeTimeouts[animId] = timeoutId;
@@ -159,33 +146,26 @@ function triggerAnimation(animId, graph) {
 async function simulateStep(instruction) {
     const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
     lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
-
-    const trimmedLine = instruction.trim();
-    if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
+    if (!instruction) {
         outputArea.textContent = JSON.stringify({
             status: "Bỏ qua dòng trống hoặc chú thích.",
-            instruction: trimmedLine
+            instruction: instruction
         }, null, 2);
         return;
     }
+    // const trimmedLine = instruction.trim();
+    // if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
+    //     outputArea.textContent = JSON.stringify({
+    //         status: "Bỏ qua dòng trống hoặc chú thích.",
+    //         instruction: trimmedLine
+    //     }, null, 2);
+    //     return;
+    // }
 
-    let parsedInstruction = null;
-    let result = format.parseRFormatInstruction(trimmedLine);
-
-    if (result?.error) {
-        parsedInstruction = result;
-    } else if (!result) {
-        parsedInstruction = {
-            error: true,
-            message: "Lệnh không nhận dạng được.",
-            raw: trimmedLine
-        };
-    } else {
-        parsedInstruction = result;
-    }
+    let result = format.parseRFormatInstruction(instruction);
+    let parsedInstruction = utilUI.calParseInstruction(result);
 
     let outputJson = {};
-
     if (parsedInstruction.error) {
         outputJson = {
             status: "Lỗi: " + parsedInstruction.message,
@@ -200,25 +180,18 @@ async function simulateStep(instruction) {
         details: parsedInstruction
     };
 
-    let instructionGraph = null;
     const initialAnims = ['anim-3'];
-
+    
     executeFormat(parsedInstruction);
-    if (parsedInstruction.type === 'R') {
-        instructionGraph = normalR.animation();
-    } else if (parsedInstruction.type === 'D') {
-        instructionGraph = normalD.animation();
-    } else if (parsedInstruction.type === 'CB') {
-        instructionGraph = normalCB.animation();
-    }
-
+    let opcode = parsedInstruction.opcode;
+    let instructionGraph = utilUI.calculateGraph(opcode);
+    console.log(opcode);
     if (instructionGraph && initialAnims.length > 0) {
-        let completed = 0;
-        outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${parsedInstruction.opcode || parsedInstruction.type}`;
+        outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${opcode || parsedInstruction.type}`;
         outputArea.textContent = JSON.stringify(outputJson, null, 2);
         await Promise.all(
             initialAnims.map(startAnimId =>
-                triggerAnimation(startAnimId, instructionGraph)
+                triggerAnimation(startAnimId, instructionGraph, opcode)
             )
         );
 
