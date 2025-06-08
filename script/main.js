@@ -4,7 +4,8 @@ import * as format from '../format/format.js' // Và các module parse khác n�
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as theme from '../UI/theme.js';
-import * as fullScreen from '../UI/fullscreen.js';
+import * as update from './register.js';
+import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from './reg_mem_table.js'
 
@@ -20,6 +21,11 @@ const lineNumbersElement = document.getElementById('lineNumbers');
 const registerTableContainer = document.getElementById('register-table-container');
 const memoryTableContainer = document.getElementById('memory-table-container');
 const dataDisplayContainer = document.getElementById('data-display-container');
+const lineNumbersElement = document.getElementById('lineNumbers');
+
+const registerTableContainer = document.getElementById('register-table-container');
+const memoryTableContainer = document.getElementById('memory-table-container');
+const dataDisplayContainer = document.getElementById('data-display-container');
 
 // --- Trạng thái Hoạt ảnh Không Đồng Bộ ---
 let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
@@ -29,6 +35,12 @@ let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của
 let registers = Array(32).fill(0); // 32 registers, all initialized to 0
 let memory = Array(100000).fill(0); 
 let componentInputCounter = {};
+
+let displayState = {
+    registerFormat: 'hex',
+    memoryFormat: 'hex'
+};
+
 
 let displayState = {
     registerFormat: 'hex',
