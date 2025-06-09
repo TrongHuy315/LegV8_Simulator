@@ -8,6 +8,7 @@ import * as update from './register.js';
 import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from './reg_mem_table.js'
+import * as pathHighlighter from './pathHighlighter.js'; 
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -77,6 +78,9 @@ function triggerAnimation(animId, graph, opcode) {
             resolve(); // Nothing to do
             return;
         }
+
+        pathHighlighter.highlightPathForAnimation(animId);
+
         //console.log(animId);
         const animData = graph[animId];
         const nextAnims = animData.next || [];
@@ -120,6 +124,10 @@ function triggerAnimation(animId, graph, opcode) {
                 if (typeof endAction === 'function') {
                     endAction();
                 }
+                else if (Array.isArray(endAction)) {
+                    endAction.forEach(fn => fn());
+                }
+
                 if (componentIdToHighlight) {
                     utilUI.highlightComponent(svg, componentIdToHighlight);
                 }
@@ -246,7 +254,10 @@ window.addEventListener('load', () => {
             for (let instruction of instructions) {
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
-                utilUI.removeAllHighlights(svg);
+
+                pathHighlighter.resetHighlights();
+
+                // utilUI.removeAllHighlights(svg);
                 componentInputCounter = {};
                 console.log(instruction);
                 await simulateStep(instruction);  // Wait for animation to finish

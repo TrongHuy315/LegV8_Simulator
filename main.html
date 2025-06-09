@@ -16,7 +16,7 @@
                 <div class="line-numbers" id = "lineNumbers">
                     <!--  -->
                 </div>
-                <textarea id="instruction-editor" placeholder="Your Code Here"></textarea>
+                <textarea id="instruction-editor" placeholder="Your Code Here">add x9, x10, x11</textarea>
             </div>
 
             <button id="simulate-button">Simulate Step</button>
@@ -47,6 +47,11 @@
                         markerWidth="6" markerHeight="6"
                         orient="auto-start-reverse">
                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#007bff" />
+                    </marker>
+                    <marker id="arrow-active" viewBox="0 0 10 10" refX="8" refY="5"
+                        markerWidth="6" markerHeight="6"
+                        orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ff9900" />
                     </marker>
                 </defs>
 
@@ -163,107 +168,137 @@
                 <text x="405" y="345" class="control-label">RegWrite</text>
 
                 <!--Blue Text-->
-                <text x="333" y="495" class="control-label">0</text>
-                <text x="443" y="360" class="control-label">1</text>
-                <text x="553" y="416" class="control-label">0</text>
-                <text x="633" y="345" class="control-label">0</text>
-                <text x="695" y="340" class="control-label">0</text>
-                <text x="755" y="340" class="control-label">0</text>
-                <text x="807" y="237" class="control-label">0</text>
-                <text x="862" y="187" class="control-label">0</text>
-                <text x="795" y="413" class="control-label">0</text>
-                <text x="900" y="435" class="control-label">0</text>
-                <text x="803" y="547" class="control-label">0</text>
-                <text x="642" y="477" class="control-label">0010</text>
-                <text x="567" y="615" class="control-label">10</text>
+                <text x="333" y="495" class="control-label" id="near-mux-1">0</text>
+                <text x="443" y="360" class="control-label" id="near-reg-write">0</text>
+                <text x="553" y="416" class="control-label" id="near-mux-2">0</text>
+                <text x="633" y="345" class="control-label" id="near-flag">0</text>
+                <text x="695" y="340" class="control-label" id="near-and-1">0</text>
+                <text x="755" y="340" class="control-label" id="near-and-2">0</text>
+                <text x="807" y="237" class="control-label" id="near-orr">0</text>
+                <text x="862" y="187" class="control-label" id="near-mux-4">0</text>
+                <text x="795" y="413" class="control-label" id="near-high-memory">0</text>
+                <text x="900" y="435" class="control-label" id="near-mux-3">0</text>
+                <text x="803" y="547" class="control-label" id="near-low-memory">0</text>
+                <text x="642" y="477" class="control-label" id="near-alu">0000</text>
+                <text x="567" y="615" class="control-label" id="near-alu-control">00</text>
 
                 <!-- Wires-->
                 <!--MUX to PC-->
-                <polyline class="wire-black" points="885,140 930,140"/>
-                <polyline class="wire-black" points="930,140 930,50"/>
-                <polyline class="wire-black" points="930,50 20,50"/>
-                <polyline class="wire-black" points="20,50 20,380"/>
-                <polyline class="wire-black" points="20,380 40,380" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="1.1" points="885,140 930,140"/>
+                <polyline class="wire-black" id="1.2" points="930,140 930,50"/>
+                <polyline class="wire-black" id="1.3" points="930,50 20,50"/>
+                <polyline class="wire-black" id="1.4" points="20,50 20,380"/>
+                <polyline class="wire-black" id="1.5" points="20,380 40,380" marker-end="url(#arrow-black)"/>
+                
                 <!--Add4 to MUX-->
-                <polyline class="wire-black" points="230,110 860,110" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="2.1" points="230,110 860,110" marker-end="url(#arrow-black)"/>
+                
                 <!--PC to InsMemory-->
-                <polyline class="wire-black" points="70,380 115,380" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="3.1" points="70,380 92,380"/>
+                <polyline class="wire-black" id="4.1" points="92,380 115,380" marker-end="url(#arrow-black)"/>
+                
                 <!--PC to Add4-->
-                <polyline class="wire-black" points="92,380 92,90"/>
-                <polyline class="wire-black" points="92,90 170,90" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="5.1" points="92,380 92,200"/>
+                <polyline class="wire-black" id="6.1" points="92,200 92,90"/>
+                <polyline class="wire-black" id="6.2" points="92,90 170,90" marker-end="url(#arrow-black)"/>
+                
                 <!--4 to Add-->
-                <polyline class="wire-black" points="135,130 170,130" marker-end="url(#arrow-black)"/>
-                <!--Add to MUX-->
-                <polyline class="wire-black" points="720,160 855,160" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="7.1" points="135,130 170,130" marker-end="url(#arrow-black)"/>
+                
+                <!--Add to MUX4-->
+                <polyline class="wire-black" id="39.1" points="720,160 855,160" marker-end="url(#arrow-black)"/>
+                
                 <!--Shift Left 2 to Add-->
-                <polyline class="wire-black" points="645,185 670,185" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="38.1" points="645,185 670,185" marker-end="url(#arrow-black)"/>
+                
                 <!--PC to Add-->
-                <polyline class="wire-black" points="92,200 290,200"/>
-                <polyline class="wire-black" points="290,200 290,140"/>
-                <polyline class="wire-black" points="290,140 670,140" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="8.1" points="92,200 290,200"/>
+                <polyline class="wire-black" id="8.2" points="290,200 290,140"/>
+                <polyline class="wire-black" id="8.3" points="290,140 670,140" marker-end="url(#arrow-black)"/>
+                
                 <!--Sign Extend to Shift Left 2-->
-                <polyline class="wire-black" points="460,565 520,565"/>
-                <polyline class="wire-black" points="520,565 520,180"/>
-                <polyline class="wire-black" points="520,180 595,180" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="24.1" points="460,565 520,565"/>
+                <polyline class="wire-black" id="24.2" points="520,565 520,480"/>
+                <polyline class="wire-black" id="25.1" points="520,480 520,180"/>
+                <polyline class="wire-black" id="25.2" points="520,180 595,180" marker-end="url(#arrow-black)"/>
+                
                 <!--InsMemory to Sign Extend-->
-                <polyline class="wire-black" points="205,430 230,430"/>
-                <polyline class="wire-black" points="230,430 230,565"/>
-                <polyline class="wire-black" points="230,565 420,565" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="9.1" points="205,430 230,430"/>
+                <polyline class="wire-black" id="16.1" points="230,430 230,480"/>
+                <polyline class="wire-black" id="20.1" points="230,480 230,565"/>
+                <polyline class="wire-black" id="20.2" points="230,565 370,565"/>
+                <polyline class="wire-black" id="22.1" points="370,565 420,565" marker-end="url(#arrow-black)"/>
                 <!--InsMemory to Control-->
-                <polyline class="wire-black" points="230,430 230,280"/>
-                <polyline class="wire-black" points="230,280 340,280" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="10.1" points="230,430 230,415"/>
+                <polyline class="wire-black" id="12.1" points="230,415 230,380"/>
+                <polyline class="wire-black" id="14.1" points="230,380 230,280"/>
+                <polyline class="wire-black" id="14.2" points="230,280 340,280" marker-end="url(#arrow-black)"/>
                 <text x="275" y="275" class="label-small">Instruction[31-21]</text>
                 
-                <polyline class="wire-black" points="230,380 390,380" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="13.1" points="230,380 390,380" marker-end="url(#arrow-black)"/>
                 <text x="270" y="375" class="label-small">Instruction[9-5]</text>
                 
-                <polyline class="wire-black" points="230,415 325,415" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="11.1" points="230,415 325,415" marker-end="url(#arrow-black)"/>
                 <text x="275" y="410" class="label-small">Instruction[20-16]</text>
                 
-                <polyline class="wire-black" points="230,470 390,470" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="17.1" points="230,470 290,470"/>
+                <polyline class="wire-black" id="19.1" points="290,470 390,470" marker-end="url(#arrow-black)"/>
                 <text x="270" y="480" class="label-small">Instruction[4-0]</text>
                 
-                <polyline class="wire-black" points="290,470 290,445"/>
-                <polyline class="wire-black" points="290,445 325,445" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="18.1" points="290,470 290,445"/>
+                <polyline class="wire-black" id="18.2" points="290,445 325,445" marker-end="url(#arrow-black)"/>
+                
                 <text x="275" y="560" class="label-small">Instruction[31-0]</text>
 
                 <!--MUX to Registers-->
-                <polyline class="wire-black" points="355,430 390,430" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="21.1" points="355,430 390,430" marker-end="url(#arrow-black)"/>
+                
                 <!--InsMemory to ALU Control-->
-                <polyline class="wire-black" points="370,565 370,615"/>
-                <polyline class="wire-black" points="370,615 535,615"/>
-                <polyline class="wire-black" points="535,615 535,580"/>
-                <polyline class="wire-black" points="535,580 555,580" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="23.1" points="370,565 370,615"/>
+                <polyline class="wire-black" id="23.2" points="370,615 535,615"/>
+                <polyline class="wire-black" id="23.3" points="535,615 535,580"/>
+                <polyline class="wire-black" id="23.4" points="535,580 555,580" marker-end="url(#arrow-black)"/>
                 <text x="415" y="610" class="label-small">Instruction[31-21]</text>
 
                 <!--Registers to MUX-->
-                <polyline class="wire-black" points="490,440 545,440" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="27.1" points="490,440 505,440"/>
+                <polyline class="wire-black" id="28.1" points="505,440 545,440" marker-end="url(#arrow-black)"/>
+                
                 <!--Sign Extends to MUX-->
-                <polyline class="wire-black" points="520,480 545,480" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="26.1" points="520,480 545,480" marker-end="url(#arrow-black)"/>
+                
                 <!--Registers to ALU-->
-                <polyline class="wire-black" points="490,400 610,400" marker-end="url(#arrow-black)"/>
-                <!--MUX to ALU-->
-                <polyline class="wire-black" points="575,460 610,460" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="30.1" points="490,400 610,400" marker-end="url(#arrow-black)"/>
+                
+                <!--MUX2 to ALU-->
+                <polyline class="wire-black" id="37.1" points="575,460 610,460" marker-end="url(#arrow-black)"/>
+                
                 <!--Registers to Data Memory-->
-                <polyline class="wire-black" points="505,440 505,525"/>
-                <polyline class="wire-black" points="505,525 760,525" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="29.1" points="505,440 505,525"/>
+                <polyline class="wire-black" id="29.2" points="505,525 760,525" marker-end="url(#arrow-black)"/>
+                
                 <!--ALU to Data Memory-->
-                <polyline class="wire-black" points="670,440 760,440" marker-end="url(#arrow-black)"/>
-                <!--ALU to MUX-->
-                <polyline class="wire-black" points="740,440 740,570"/>
-                <polyline class="wire-black" points="740,570 880,570"/>
-                <polyline class="wire-black" points="880,570 880,500"/>
-                <polyline class="wire-black" points="880,500 895,500" marker-end="url(#arrow-black)"/>
-                <!--MUX to Registers-->
-                <polyline class="wire-black" points="925,480 940,480"/>
-                <polyline class="wire-black" points="940,480 940,630"/>
-                <polyline class="wire-black" points="940,630 350,630"/>
-                <polyline class="wire-black" points="350,630 350,485"/>
-                <polyline class="wire-black" points="350,485 390,485" marker-end="url(#arrow-black)"/>
-                <!--Data Memory to MUX-->
-                <polyline class="wire-black" points="860,460 895,460" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="32.1" points="670,440 740,440"/>
+                <polyline class="wire-black" id="33.1" points="740,440 760,440" marker-end="url(#arrow-black)"/>
+                
+                <!--ALU to MUX3-->
+                <polyline class="wire-black" id="34.1" points="740,440 740,570"/>
+                <polyline class="wire-black" id="34.2" points="740,570 880,570"/>
+                <polyline class="wire-black" id="34.3" points="880,570 880,500"/>
+                <polyline class="wire-black" id="34.4" points="880,500 895,500" marker-end="url(#arrow-black)"/>
+                
+                <!--MUX3 to Registers-->
+                <polyline class="wire-black" id="36.1" points="925,480 940,480"/>
+                <polyline class="wire-black" id="36.2" points="940,480 940,630"/>
+                <polyline class="wire-black" id="36.3" points="940,630 350,630"/>
+                <polyline class="wire-black" id="36.4" points="350,630 350,485"/>
+                <polyline class="wire-black" id="36.5" points="350,485 390,485" marker-end="url(#arrow-black)"/>
+                
+                <!--Data Memory to MUX3-->
+                <polyline class="wire-black" id="35.1" points="860,460 895,460" marker-end="url(#arrow-black)"/>
+                
                 <!--ALU to Flag-->
-                <polyline class="wire-black" points="640,390 640,370" marker-end="url(#arrow-black)"/>
+                <polyline class="wire-black" id="31.1" points="640,390 640,370" marker-end="url(#arrow-black)"/>
 
                 <!--Logic Path-->
                 <!--RegWrite-->
@@ -915,9 +950,9 @@
                         visibility="hidden"
                 />
                 <circle id="lightCircle-mux2-turn1"
-                cx="560" cy="480" r="15"
-                fill="url(#glow)"
-                visibility="hidden"
+                        cx="560" cy="480" r="15"
+                        fill="url(#glow)"
+                        visibility="hidden"
                 />
                 <circle id="lightCircle-mux3-turn1"
                         cx="910" cy="460" r="15"
@@ -935,17 +970,27 @@
                         visibility="hidden"
                 />
                 <circle id="lightCircle-mux4-turn1"
-                cx="870" cy="160" r="15"
-                fill="url(#glow)"
-                visibility="hidden"
-                />
-                <circle id="lightCircle-flags-top"
-                        cx="640" cy="355" r="5"
+                        cx="870" cy="160" r="15"
                         fill="url(#glow)"
                         visibility="hidden"
                 />
-                <circle id="lightCircle-flags-bottom"
-                        cx="640" cy="365" r="5"
+                <circle id="lightCircle-flags-N"
+                        cx="610" cy="360" r="5"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                />
+                <circle id="lightCircle-flags-Z"
+                        cx="630" cy="360" r="5"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                />
+                <circle id="lightCircle-flags-C"
+                        cx="650" cy="360" r="5"
+                        fill="url(#glow)"
+                        visibility="hidden"
+                />
+                <circle id="lightCircle-flags-V"
+                        cx="670" cy="360" r="5"
                         fill="url(#glow)"
                         visibility="hidden"
                 />

@@ -62,15 +62,15 @@ export function animation() {
 
 
 export const animationEndActions = {
-    'anim-1': () => toggleLight('lightCircle-pc'),
-    'anim-40': () => toggleLight('lightCircle-mux1-turn1'),
-    'anim-48': () => toggleLight('lightCircle-mux2-turn0'),
-    // 'anim-45': () => toggleLight('lightCircle-mux3-turn0'),
-    'anim-53': () => toggleLight('lightCircle-mux4-turn0'),
-    // 'anim-30': () => toggleLight('lightCircle-alu-top'),
-    // 'anim-37': () => toggleLight('lightCircle-alu-top'),
-    //'anim-8': () => toggleLight('lightCircle-addbranch-top'),
-    //'anim-38': () => toggleLight('lightCircle-addbranch-bottom'),
-    // 'anim-47': () => toggleLight('lightCircle-flags-top'),
-    // 'anim-31': () => toggleLight('lightCircle-flags-top'),
+    'anim-1': [() => toggleLight('lightCircle-pc')],
+    'anim-40': [() => toggleLight('lightCircle-mux1-turn1')],
+    'anim-48': [() => toggleLight('lightCircle-mux2-turn0')],
+    // 'anim-45': [() => toggleLight('lightCircle-mux3-turn0')],
+    'anim-53': [() => toggleLight('lightCircle-mux4-turn0')],
+    // 'anim-30': [() => toggleLight('lightCircle-alu-top')],
+    // 'anim-37': [() => toggleLight('lightCircle-alu-top')],
+    //'anim-8': [() => toggleLight('lightCircle-addbranch-top')],
+    //'anim-38': [() => toggleLight('lightCircle-addbranch-bottom')],
+    // 'anim-47': [() => toggleLight('lightCircle-flags-top')],
+    // 'anim-31': [() => toggleLight('lightCircle-flags-top')],
 };
