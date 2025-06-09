@@ -72,3 +72,7 @@ export function IFormat(parsedInstruction, registers, memory) {
 export function CBFormat(parsedInstruction, registers, memory) {
     const { opcode, rt, offset } = parsedInstruction;
 }
+
+export function BFormat(parsedInstructionm, registers, memory) {
+    
+}

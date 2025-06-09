@@ -3,6 +3,7 @@ import * as D_format from './d_format.js';
 import * as R_format from './r_format.js';
 import * as CB_format from './cb_format.js';
 import * as I_format from './i_format.js';
+import * as B_format from './b_format.js';
 import * as update from '../script/register.js'
 export const FORMAT_OPCODES = {
     R_FORMAT: {
@@ -21,11 +22,13 @@ export const FORMAT_OPCODES = {
         opcode: CB_format.CB_FORMAT_OPCODES, 
         update: update.CBFormat 
     },
-    // B_FORMAT: {
-    //     opcode: format.B_FORMAT_OPCODES, 
-    //     update: update.BFormat 
-    // }
+    B_FORMAT: {
+        opcode: B_format.B_FORMAT_OPCODES, 
+        update: update.BFormat 
+    }
 };
+
+//|B.EQ|B.NE|B.LT|B.LO|B.LE|B.LS|B.GT|B.HI|B.GE|B.HS
 export function parseFormatInstruction(line) {
     line = line.trim().toUpperCase(); // 1. Chuẩn hóa: Xóa khoảng trắng thừa đầu/cuối và chuyển thành chữ HOA.
     if (!line || line.startsWith('//') || line.startsWith('#')) {
@@ -37,7 +40,8 @@ export function parseFormatInstruction(line) {
     const iFormatRegex = /^\s*(ADDI|SUBI|ANDI|ORRI|EORI|ADDIS|SUBIS)\s+X(\d+)\s*,\s*X(\d+)\s*,\s*#(\d+)\s*(?:#.*)?$/i;
     const CBFormaxRegex = /^\s*(CBZ|CBNZ)\s+X(\d+)\s*,\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:#.*)?$/i;
     const labelRegex = /^\s*([a-zA-Z_][a-zA-Z0-9_]*):\s*(.*)$/;
-    const BFormaxRegex = /^\s*(B)\s+(-?\d+)\s*(?:#.*)?$/i;
+    const bFormaxRegex = /^\s*(B|BL)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:#.*)?$/i;
+    console.log("match: ", line.match(bFormaxRegex));
     let convert = line => {
         if (line.match(rFormatRegex)) { 
             return R_format.convert(line, rFormatRegex);
@@ -49,6 +53,9 @@ export function parseFormatInstruction(line) {
             return CB_format.convert(line, CBFormaxRegex);
         } else if (line.match(iFormatRegex)) {
             return I_format.convert(line, iFormatRegex);
+        }
+        else if (line.match(bFormaxRegex)) {
+            return B_format.convert(line, bFormaxRegex);
         }
         else { 
             return { 

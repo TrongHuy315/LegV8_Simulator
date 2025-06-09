@@ -7,6 +7,7 @@ import * as ldur from '../script/Animation/D_format/ldur.js';
 import * as stur from '../script/Animation/D_format/stur.js';
 import * as CBZ_NotBranch from '../script/Animation/CB_format/CBZ_notBranch.js';
 import * as CBZ_Branch from '../script/Animation/CB_format/CBZ_Branch.js';
+import * as Branch from '../script/Animation/B_format/branch.js';
 
 // Hàm tiện ích để lấy phần tử SVG bằng ID (An toàn hơn)
 export function getElement(svg, id) {
@@ -146,6 +147,9 @@ export function calculateEndAction(opcode, animId, branch = false) {
         if (branch) endAction = CBZ_Branch.animationEndActions;
         else endAction = CBZ_NotBranch.animationEndActions;
     }
+    else if (opcode === 'B' || opcode === 'BL') {
+        if (opcode === 'B') endAction = Branch.animationEndActions;
+    }
     return endAction[animId];
 }
 
@@ -169,6 +173,9 @@ export function calculateGraph(opcode, branch = false) {
     }
     else if (opcode === 'CBZ' || opcode === 'CBNZ') {
         instructionGraph = branch ? CBZ_Branch.animation() : CBZ_NotBranch.animation();
+    }
+    else if (opcode === 'B' || opcode === 'BL') {
+        if (opcode === 'B') instructionGraph = Branch.animation();
     }
     return instructionGraph;
 }
@@ -203,6 +210,12 @@ export function calRequirements(opcode) {
     }
     else if (opcode === 'CBZ' || opcode === 'CBNZ') {
         cnt = [1, 999, 1, 2]
+    }
+    else if (opcode === 'B' || opcode === 'BL') {
+        if (opcode === 'B') {
+            cnt = [1, 999, 999, 999];
+            requirements["and-gate2"] = 1;
+        }
     }
     else {
         cnt = [1, 2, 2, 2];

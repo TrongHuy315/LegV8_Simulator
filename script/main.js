@@ -4,7 +4,6 @@ import * as format from '../format/format.js' // Và các module parse khác n�
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as theme from '../UI/theme.js';
-import * as update from './register.js';
 import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from '../UI/reg_mem_table.js'
@@ -210,6 +209,9 @@ async function simulateStep(instruction) {
             label = parsedInstruction.label;
         }
     }
+    else if (opcode === 'B') {
+        label = parsedInstruction.label;
+    }
     let instructionGraph = utilUI.calculateGraph(opcode, branch);
     if (instructionGraph && initialAnims.length > 0) {
         outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${opcode || parsedInstruction.type}`;
@@ -249,6 +251,9 @@ window.addEventListener('load', () => {
                 console.log(instruction);
                 await simulateStep(instruction);  // Wait for animation to finish
                 console.log("finish instruction");
+            }
+            if (label != null) {
+                outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label ${label}`}, null, 2);
             }
         });
     } else {
