@@ -231,7 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            //console.log(format.normalizeText(instructionEditor.value));
+            registers = Array(32).fill(0); 
+            memory = Array(100000).fill(0); 
             instructionEditor.value = format.normalizeText(instructionEditor.value);
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
@@ -250,7 +251,7 @@ window.addEventListener('load', () => {
                 }
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
-
+                utilUI.removeAllHighlights(svg);
                 pathHighlighter.resetHighlights();
 
                 // utilUI.removeAllHighlights(svg);
@@ -258,26 +259,22 @@ window.addEventListener('load', () => {
                 let result = format.parseFormatInstruction(instruction);
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    
                 await simulateStep(parsedInstruction);
+                console.log(label);
                 if (label != null) {
-                    //console.log("outside: ", label, i);
-                    //console.log(parsedInstruction.label);
-                    if (label in saveIndexLabel) i = saveIndexLabel[label] - 1;
+                    if (label in saveIndexLabel) {
+                        i = saveIndexLabel[label] - 1;
+                    }
                 }
                 else {
                     if (parsedInstruction?.label) {
-                        if (!(parsedInstruction.label in saveIndexLabel)) {
+                        console.log("raw: ", parsedInstruction.raw, parsedInstruction.raw.includes(":"));
+                        if (!(parsedInstruction.label in saveIndexLabel) && parsedInstruction.raw.includes(parsedInstruction.label) == false) {
                             saveIndexLabel[parsedInstruction.label] = i;
+                            console.log("label: ", parsedInstruction.label, i);
                         }
                     }
                 }
             }
-            // for (let instruction of instructions) {
-            //     utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
-            //     utilUI.hideAllDots(svg);
-            //     utilUI.removeAllHighlights(svg);
-            //     componentInputCounter = {};
-            //     await simulateStep(instruction);  // Wait for animation to finish
-            // }
             if (label != null) {
                 outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label ${label}`}, null, 2);
             }
