@@ -238,6 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
+            console.log(format.normalizeText(instructionEditor.value));
+            instructionEditor.value = format.normalizeText(instructionEditor.value);
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');

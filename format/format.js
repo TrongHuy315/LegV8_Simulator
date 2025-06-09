@@ -81,3 +81,31 @@ export function parseFormatInstruction(line) {
     }
     else return normalForm;
 }
+
+export function normalizeText(text) {
+    const LABEL_WIDTH = 9;
+    const OPCODE_WIDTH = 7;
+
+    const instructions = text.split('\n').filter(line => {
+        const trimmed = line.trim();
+        return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
+    });
+
+    const formattedInstructions = instructions.map(line => {
+        const labelRegex = /^([a-zA-Z_][a-zA-Z0-9_]*):\s*(.*)$/;
+        const match = line.match(labelRegex);
+
+        if (match) {
+            const label = match[1].toUpperCase();
+            const instruction = match[2].trim().toUpperCase();
+            const [opcode, ...operands] = instruction.split(/\s+/);
+            return `${(label + ':').padEnd(LABEL_WIDTH)} ${opcode.padEnd(OPCODE_WIDTH)} ${operands.join(' ')}`;
+        } else {
+            const cleanLine = line.trim().toUpperCase();
+            const [opcode, ...operands] = cleanLine.split(/\s+/);
+            return `${''.padEnd(LABEL_WIDTH)} ${opcode.padEnd(OPCODE_WIDTH)} ${operands.join(' ')}`;
+        }
+    });
+
+    return formattedInstructions.join('\n');
+}
