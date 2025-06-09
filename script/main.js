@@ -40,22 +40,20 @@ let displayState = {
 
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
-    let memoryChanged = false;
+    // let memoryChanged = false;
     for (let formatKey in format.FORMAT_OPCODES) {
         const formats = format.FORMAT_OPCODES[formatKey];
         if (formats.opcode.includes(parsedInstruction.opcode)) {
-            if (formatKey === "D_FORMAR") {
-                memoryChanged = update.DFormat(parsedInstruction, registers, memory);
-            }
             formats.update(parsedInstruction, registers, memory);
+            // if (parsedInstruction.opcode === 'STUR') {
+            //     // memoryChanged = update.DFormat(parsedInstruction, registers, memory);
+            //     memoryChanged = true;
+            // }
             break;
         }
     }
-    
     regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
-    if (memoryChanged) {
-        regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
-    }
+    regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
 }
 
 function parseDuration(durationString) {

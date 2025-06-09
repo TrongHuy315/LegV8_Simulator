@@ -4,35 +4,71 @@
 // - container: Phần tử DOM để render bảng
 // - registers: Mảng dữ liệu thanh ghi
 // - displayState: Trạng thái hiển thị (hex/dec)
+// export function renderRegisterTable(container, registers, displayState) {
+//     if (!container) return;
+//     console.log("html: ", registers[1]);
+//     const specialNames = { 28: 'SP', 29: 'FP', 30: 'LR', 31: 'XZR' };
+
+//     let gridHtml = '<div class="register-grid">';
+//     for (let i = 0; i < 16; i++) {
+//         const regName1 = specialNames[i] || `X${i}`;
+//         const value1 = registers[i];
+//         const displayValue1 = displayState.registerFormat === 'hex'
+//             ? `0x${value1.toString(16).padStart(8, '0')}` : value1.toString(10);
+        
+//         const regName2 = specialNames[i + 16] || `X${i + 16}`;
+//         const value2 = registers[i + 16];
+//         const displayValue2 = displayState.registerFormat === 'hex'
+//             ? `0x${value2.toString(16).padStart(8, '0')}` : value2.toString(10);
+
+//         gridHtml += `
+//             <div class="register-item">
+//                 <span class="reg-name">${regName1}</span>
+//                 <span class="reg-value">${displayValue1}</span>
+//             </div>
+//             <div class="register-item">
+//                 <span class="reg-name">${regName2}</span>
+//                 <span class="reg-value">${displayValue2}</span>
+//             </div>
+//         `;
+//     }
+//     gridHtml += '</div>';
+
+//     const hexActive = displayState.registerFormat === 'hex' ? 'active' : '';
+//     const decActive = displayState.registerFormat === 'dec' ? 'active' : '';
+
+//     container.innerHTML = `
+//         <div class="format-toggle" data-view="registers">
+//             <button class="${hexActive}" data-format="hex">Hex</button>
+//             <button class="${decActive}" data-format="dec">Dec</button>
+//         </div>
+//         ${gridHtml}
+//     `;
+// }
 export function renderRegisterTable(container, registers, displayState) {
     if (!container) return;
 
     const specialNames = { 28: 'SP', 29: 'FP', 30: 'LR', 31: 'XZR' };
 
-    let gridHtml = '<div class="register-grid">';
-    for (let i = 0; i < 16; i++) {
-        const regName1 = specialNames[i] || `X${i}`;
-        const value1 = registers[i];
-        const displayValue1 = displayState.registerFormat === 'hex'
-            ? `0x${value1.toString(16)}` : value1.toString(10);
-        
-        const regName2 = specialNames[i + 16] || `X${i + 16}`;
-        const value2 = registers[i + 16];
-        const displayValue2 = displayState.registerFormat === 'hex'
-            ? `0x${value2.toString(16)}` : value2.toString(10);
+    let tableHtml = '<table class="register-table">';
+    for (let row = 0; row < 8; row++) { // 8 rows
+        tableHtml += '<tr>';
+        for (let col = 0; col < 4; col++) { // 4 columns
+            const index = row + col * 8; // Calculate the register index for vertical order
+            const regName = specialNames[index] || `X${index}`;
+            const value = registers[index];
+            const displayValue = displayState.registerFormat === 'hex'
+                ? `0x${value.toString(16).padStart(8, '0')}` // Ensure 8 digits
+                : value.toString(10);
 
-        gridHtml += `
-            <div class="register-item">
-                <span class="reg-name">${regName1}</span>
-                <span class="reg-value">${displayValue1}</span>
-            </div>
-            <div class="register-item">
-                <span class="reg-name">${regName2}</span>
-                <span class="reg-value">${displayValue2}</span>
-            </div>
-        `;
+            tableHtml += `
+                <td class="reg-name">${regName}</td>
+                <td class="reg-value">${displayValue}</td>
+            `;
+        }
+        tableHtml += '</tr>';
     }
-    gridHtml += '</div>';
+    tableHtml += '</table>';
 
     const hexActive = displayState.registerFormat === 'hex' ? 'active' : '';
     const decActive = displayState.registerFormat === 'dec' ? 'active' : '';
@@ -42,10 +78,9 @@ export function renderRegisterTable(container, registers, displayState) {
             <button class="${hexActive}" data-format="hex">Hex</button>
             <button class="${decActive}" data-format="dec">Dec</button>
         </div>
-        ${gridHtml}
+        ${tableHtml}
     `;
 }
-
 // Hàm này nhận vào:
 // - container: Phần tử DOM để render bảng
 // - memory: Mảng dữ liệu bộ nhớ
@@ -63,7 +98,7 @@ export function renderMemoryView(container, memory, displayState) {
         const value = (memIndex >= 0) ? memory[memIndex] : 0;
         
         const displayValue = displayState.memoryFormat === 'hex'
-            ? `0x${value.toString(16)}` : value.toString(10);
+            ? `0x${value.toString(16).padStart(8, '0')}` : value.toString(10);
 
         tableHtml += `
             <tr>
