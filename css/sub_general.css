@@ -470,7 +470,33 @@ body {
     grid-template-columns: repeat(2, 1fr 1fr);
     gap: 8px 20px; /* Khoảng cách hàng và cột */
 }
+.register-table,
+.memory-table {
+    width: 100%;
+    border-collapse: collapse; /* Remove gaps between cells */
+    font-size: 14px;
+    text-align: center; /* Center-align text for better readability */
+}
 
+.register-table td,
+.memory-table td {
+    padding: 10px 15px; /* Add padding for better spacing */
+    border: none; /* Remove borders between cells */
+    background-color: var(--editor-bg); /* Use a consistent background color */
+    color: var(--editor-text); /* Use the editor text color */
+}
+
+.register-table .reg-name,
+.memory-table .mem-address {
+    font-weight: bold; /* Make register names and memory addresses bold */
+    color: var(--label-fill); /* Use label color for register names and addresses */
+}
+
+.register-table .reg-value,
+.memory-table .mem-value {
+    color: var(--wire-blue-stroke); /* Use control wire color for register values */
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Use monospace font for values */
+}
 .register-item {
     display: flex;
     justify-content: space-between;

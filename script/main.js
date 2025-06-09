@@ -4,10 +4,9 @@ import * as format from '../format/format.js' // Và các module parse khác n�
 import * as utilUI from '../UI/util.js';
 import * as setting from '../setting/setting.js';
 import * as theme from '../UI/theme.js';
-import * as update from './register.js';
 import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
-import * as regmemtable from './reg_mem_table.js'
+import * as regmemtable from '../UI/reg_mem_table.js'
 import * as pathHighlighter from './pathHighlighter.js'; 
 
 // --- Tham chiếu đến các Phần tử DOM ---
@@ -41,22 +40,20 @@ let displayState = {
 
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
-    let memoryChanged = false;
+    // let memoryChanged = false;
     for (let formatKey in format.FORMAT_OPCODES) {
         const formats = format.FORMAT_OPCODES[formatKey];
         if (formats.opcode.includes(parsedInstruction.opcode)) {
-            if (formatKey === "D_FORMAR") {
-                memoryChanged = update.DFormat(parsedInstruction, registers, memory);
-            }
             formats.update(parsedInstruction, registers, memory);
+            // if (parsedInstruction.opcode === 'STUR') {
+            //     // memoryChanged = update.DFormat(parsedInstruction, registers, memory);
+            //     memoryChanged = true;
+            // }
             break;
         }
     }
-    
     regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
-    if (memoryChanged) {
-        regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
-    }
+    regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
 }
 
 function parseDuration(durationString) {
@@ -220,6 +217,9 @@ async function simulateStep(instruction) {
             label = parsedInstruction.label;
         }
     }
+    else if (opcode === 'B') {
+        label = parsedInstruction.label;
+    }
     let instructionGraph = utilUI.calculateGraph(opcode, branch);
     if (instructionGraph && initialAnims.length > 0) {
         outputJson.status = `Đang tạo hoạt ảnh không đồng bộ cho ${opcode || parsedInstruction.type}`;
@@ -246,6 +246,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
+            console.log(format.normalizeText(instructionEditor.value));
+            instructionEditor.value = format.normalizeText(instructionEditor.value);
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
@@ -262,6 +264,9 @@ window.addEventListener('load', () => {
                 console.log(instruction);
                 await simulateStep(instruction);  // Wait for animation to finish
                 console.log("finish instruction");
+            }
+            if (label != null) {
+                outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label ${label}`}, null, 2);
             }
         });
     } else {

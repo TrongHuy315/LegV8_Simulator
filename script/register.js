@@ -66,8 +66,13 @@ export function IFormat(parsedInstruction, registers, memory) {
             console.error(`Unsupported I-format opcode: ${opcode}`);
             break;
     }
+    console.log("register 2: ", registers[1]);
 }
 
 export function CBFormat(parsedInstruction, registers, memory) {
     const { opcode, rt, offset } = parsedInstruction;
+}
+
+export function BFormat(parsedInstructionm, registers, memory) {
+    
 }
