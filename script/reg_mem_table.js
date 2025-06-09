@@ -58,7 +58,7 @@ export function renderRegisterTable(container, registers, displayState) {
             const regName = specialNames[index] || `X${index}`;
             const value = registers[index];
             const displayValue = displayState.registerFormat === 'hex'
-                ? `0x${value.toString(16).padStart(8, '0')}` // Ensure 8 digits
+                ? `0x${value.toString(16)}` // Ensure 8 digits
                 : value.toString(10);
 
             tableHtml += `
@@ -85,27 +85,35 @@ export function renderRegisterTable(container, registers, displayState) {
 // - container: Phần tử DOM để render bảng
 // - memory: Mảng dữ liệu bộ nhớ
 // - displayState: Trạng thái hiển thị (hex/dec)
+
 export function renderMemoryView(container, memory, displayState) {
     if (!container) return;
 
-    const memoryToShow = 20;
-    const endAddress = 0x7ffffffff8;
-    
-    let tableHtml = '<table class="memory-table">';
-    for (let i = 0; i < memoryToShow; i++) {
-        const address = `0x${(endAddress - i * 8).toString(16)}`;
-        const memIndex = memory.length - 1 - i;
-        const value = (memIndex >= 0) ? memory[memIndex] : 0;
-        
-        const displayValue = displayState.memoryFormat === 'hex'
-            ? `0x${value.toString(16).padStart(8, '0')}` : value.toString(10);
+    const memoryToShow = 32; // Show 32 memory entries
+    const rows = memoryToShow / 2; // Divide into 2 columns (16 rows each)
+    const endAddress = 0x8000000000; // Example end address
 
-        tableHtml += `
-            <tr>
-                <td><span class="mem-address">${address}</span></td>
+    let tableHtml = '<table class="memory-table">';
+    for (let row = 0; row < rows; row++) { // Loop through rows
+        tableHtml += '<tr>';
+        for (let col = 0; col < 2; col++) { // Loop through columns
+            const index = row + col * rows; // Calculate memory index for vertical order
+            const address = `0x${(endAddress - index * 8).toString(16).padStart(10, '0')}`;
+            const memIndex = memory.length - 1 - index;
+            const value = (memIndex >= 0) ? memory[memIndex] : 0;
+
+            const displayValue = displayState.memoryFormat === 'hex'
+                ? `0x${value.toString(16)}` // Ensure 8 digits
+                : value.toString(10);
+
+            tableHtml += `
+                <td>
+                    <span class="mem-address">${address}</span>
+                </td>
                 <td class="mem-value">${displayValue}</td>
-            </tr>
-        `;
+            `;
+        }
+        tableHtml += '</tr>';
     }
     tableHtml += '</table>';
 
@@ -120,7 +128,6 @@ export function renderMemoryView(container, memory, displayState) {
         ${tableHtml}
     `;
 }
-
 // Hàm này nhận vào tất cả các đối tượng cần thiết để thiết lập listener
 export function setupToggleListeners(container, displayState, registers, memory, regContainer, memContainer) {
     if (!container) return;
