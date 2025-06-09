@@ -41,7 +41,7 @@ export function parseFormatInstruction(line) {
     const CBFormaxRegex = /^\s*(CBZ|CBNZ)\s+X(\d+)\s*,\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:#.*)?$/i;
     const labelRegex = /^\s*([a-zA-Z_][a-zA-Z0-9_]*):\s*(.*)$/;
     const bFormaxRegex = /^\s*(B|BL)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:#.*)?$/i;
-    console.log("match: ", line.match(bFormaxRegex));
+    // console.log("match: ", line.match(bFormaxRegex));
     let convert = line => {
         if (line.match(rFormatRegex)) { 
             return R_format.convert(line, rFormatRegex);

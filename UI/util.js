@@ -63,6 +63,8 @@ export function cancelAllPendingTimeouts(activeTimeouts, runningAnimations) {
 
 // Remove All Highlights Function **** ---
 export function removeAllHighlights(svg) {
+    const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
+    lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
     try {
        const highlightedElements = svg.querySelectorAll('.highlighted');
        highlightedElements.forEach(el => {

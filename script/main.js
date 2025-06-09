@@ -150,33 +150,18 @@ function triggerAnimation(animId, graph, opcode) {
 }
 
 let label = null;
-async function simulateStep(instruction) {
-    const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
-    lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
-    if (!instruction) {
-        outputArea.textContent = JSON.stringify({
-            status: "Bỏ qua dòng trống hoặc chú thích.",
-            instruction: instruction
-        }, null, 2);
-        return;
-    }
-    // const trimmedLine = instruction.trim();
-    // if (!trimmedLine || trimmedLine.startsWith('//') || trimmedLine.startsWith('#')) {
-    //     outputArea.textContent = JSON.stringify({
-    //         status: "Bỏ qua dòng trống hoặc chú thích.",
-    //         instruction: trimmedLine
-    //     }, null, 2);
-    //     return;
-    // }
-
-    let result = format.parseFormatInstruction(instruction);
-    let parsedInstruction = utilUI.calparseFormatInstruction(result);
+async function simulateStep(parsedInstruction) {
+    // const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
+    // lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
+    // let result = format.parseFormatInstruction(instruction);
+    // let parsedInstruction = utilUI.calparseFormatInstruction(result);
+    console.log(parsedInstruction, label);
     if (label != null) {
-        if (!parsedInstruction.label) return;
+        if (!parsedInstruction?.label) return;
         if (parsedInstruction.label != label) return;
         label = null;
     }
-    console.log(parsedInstruction);
+    //console.log(parsedInstruction);
     let outputJson = {};
     if (parsedInstruction.error) {
         outputJson = {
@@ -238,22 +223,50 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            console.log(format.normalizeText(instructionEditor.value));
+            //console.log(format.normalizeText(instructionEditor.value));
             instructionEditor.value = format.normalizeText(instructionEditor.value);
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
             });
-            console.log(instructions);
-            for (let instruction of instructions) {
+            //console.log(instructions);
+            let saveIndexLabel = {};
+            for(let i = 0; i < instructions.length; i++) {
+                let instruction = instructions[i];
+                if (!instruction) {
+                    outputArea.textContent = JSON.stringify({
+                        status: "Bỏ qua dòng trống hoặc chú thích.",
+                        instruction: instruction
+                    }, null, 2);
+                    continue;
+                }
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
                 utilUI.removeAllHighlights(svg);
                 componentInputCounter = {};
-                console.log(instruction);
-                await simulateStep(instruction);  // Wait for animation to finish
-                console.log("finish instruction");
+                let result = format.parseFormatInstruction(instruction);
+                let parsedInstruction = utilUI.calparseFormatInstruction(result);    
+                await simulateStep(parsedInstruction);
+                if (label != null) {
+                    //console.log("outside: ", label, i);
+                    //console.log(parsedInstruction.label);
+                    if (label in saveIndexLabel) i = saveIndexLabel[label] - 1;
+                }
+                else {
+                    if (parsedInstruction?.label) {
+                        if (!(parsedInstruction.label in saveIndexLabel)) {
+                            saveIndexLabel[parsedInstruction.label] = i;
+                        }
+                    }
+                }
             }
+            // for (let instruction of instructions) {
+            //     utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
+            //     utilUI.hideAllDots(svg);
+            //     utilUI.removeAllHighlights(svg);
+            //     componentInputCounter = {};
+            //     await simulateStep(instruction);  // Wait for animation to finish
+            // }
             if (label != null) {
                 outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label ${label}`}, null, 2);
             }
