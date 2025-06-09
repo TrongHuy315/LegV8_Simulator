@@ -7,7 +7,7 @@ import * as theme from '../UI/theme.js';
 import * as update from './register.js';
 import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
-import * as regmemtable from './reg_mem_table.js'
+import * as regmemtable from '../UI/reg_mem_table.js'
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
