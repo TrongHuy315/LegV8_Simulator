@@ -579,4 +579,21 @@ body {
 }
 /* --- END: Data Display (Registers & Memory) Styles --- */
 
+/* --- START: Active Path Highlighting Styles --- */
+
+.active-path {
+    stroke: #ff9900 !important; /* Màu cam sáng */
+    stroke-width: 2.5px !important;
+    /* marker-end: url(#arrow-active) !important; */
+    transition: stroke 0.2s ease-in-out;
+}
+
+.active-component {
+    stroke: #ff9900 !important;
+    fill: #fff2e0 !important; /* Màu nền vàng rất nhạt */
+    transition: stroke 0.2s ease-in-out, fill 0.2s ease-in-out;
+}
+
+/* --- END: Active Path Highlighting Styles --- */
+
 /* --- END OF FILE sub_general.css --- */
