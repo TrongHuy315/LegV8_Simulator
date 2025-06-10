@@ -67,6 +67,18 @@ export const animationEndActions = {
     'anim-48': [() => toggleLight('lightCircle-mux2-turn1')],
     'anim-45': [() => toggleLight('lightCircle-mux3-turn0')],
     'anim-53': [() => toggleLight('lightCircle-mux4-turn0')],
+    // 'anim-47': [
+    //     () => toggleLight('lightCircle-flags-N'),
+    //     () => toggleLight('lightCircle-flags-Z'),
+    //     () => toggleLight('lightCircle-flags-C'),
+    //     () => toggleLight('lightCircle-flags-V'),
+    // ],
+    'anim-31': [
+        () => toggleLight('lightCircle-flags-N'),
+        () => toggleLight('lightCircle-flags-Z'),
+        () => toggleLight('lightCircle-flags-C'),
+        () => toggleLight('lightCircle-flags-V'),
+    ],
     // 'anim-30': [() => toggleLight('lightCircle-alu-top')],
     // 'anim-37': [() => toggleLight('lightCircle-alu-top')],
     //'anim-8': [() => toggleLight('lightCircle-addbranch-top')],

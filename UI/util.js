@@ -8,6 +8,7 @@ import * as stur from '../script/Animation/D_format/stur.js';
 import * as CBZ_NotBranch from '../script/Animation/CB_format/CBZ_notBranch.js';
 import * as CBZ_Branch from '../script/Animation/CB_format/CBZ_Branch.js';
 import * as Branch from '../script/Animation/B_format/branch.js';
+import {setTextById} from './logic_bit_set.js'
 
 // Hàm tiện ích để lấy phần tử SVG bằng ID (An toàn hơn)
 export function getElement(svg, id) {
@@ -17,9 +18,6 @@ export function getElement(svg, id) {
     }
     try {
         const element = svg.getElementById(id);
-        // if (!element) { // Giảm log
-        //     console.warn(`Không tìm thấy phần tử với ID "${id}" trong SVG.`);
-        // }
         return element;
     } catch (e) {
         console.error(`Lỗi khi truy cập phần tử SVG với ID "${id}":`, e);
@@ -99,6 +97,11 @@ export function setMuxSelect(muxId, selected) {
     if (zero && one) {
         zero.setAttribute('fill', selected === 0 ? 'red' : 'black');
         one.setAttribute('fill', selected === 1 ? 'red' : 'black');
+    }
+}
+export function resetLogicBit() {
+    for (let key in setting.setBitOfInstruction["ADD"]) {
+        setTextById(key, "");
     }
 }
 

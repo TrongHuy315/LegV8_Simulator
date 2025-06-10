@@ -8,6 +8,7 @@ import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from '../UI/reg_mem_table.js'
 import * as pathHighlighter from './pathHighlighter.js'; 
+import {setTextById} from '../UI/logic_bit_set.js'
 
 // --- Tham chiếu đến các Phần tử DOM ---
 const simulateButton = document.getElementById('simulate-button');
@@ -40,15 +41,10 @@ let displayState = {
 
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
-    // let memoryChanged = false;
     for (let formatKey in format.FORMAT_OPCODES) {
         const formats = format.FORMAT_OPCODES[formatKey];
         if (formats.opcode.includes(parsedInstruction.opcode)) {
             formats.update(parsedInstruction, registers, memory);
-            // if (parsedInstruction.opcode === 'STUR') {
-            //     // memoryChanged = update.DFormat(parsedInstruction, registers, memory);
-            //     memoryChanged = true;
-            // }
             break;
         }
     }
@@ -142,10 +138,33 @@ function triggerAnimation(animId, graph, opcode) {
                 checkExists(input);
                 ++componentInputCounter[input];
                 if (componentInputCounter[input] >= (requirements[input] || 0)) {
+                    // Special case
+                    if (setting.setBitOfInstruction[opcode]) {
+                        if (input == 'or-gate') {
+                            let flag = 'UncondBranch';
+                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
+                        }
+                        else if (input == 'and-gate1') {
+                            let flag = 'FlagBranch';
+                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
+                        }
+                        else if (input == 'and-gate2') {
+                            let flag = 'ZeroBranch';
+                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
+                        }
+                    }
                     componentInputCounter[input] = 0;
                     await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph, opcode)));
                 }
                 resolve(); 
+            }, durationMs);
+            setTimeout(() => {
+                if (setting.animToFlag[animId]) {
+                    let flag = setting.animToFlag[animId];
+                    if (setting.setBitOfInstruction[opcode]) {
+                        setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
+                    }
+                }
             }, durationMs);
 
             activeTimeouts[animId] = timeoutId;
@@ -238,7 +257,6 @@ window.addEventListener('load', () => {
                 const trimmed = line.trim();
                 return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
             });
-            //console.log(instructions);
             let saveIndexLabel = {};
             for(let i = 0; i < instructions.length; i++) {
                 let instruction = instructions[i];
@@ -252,9 +270,9 @@ window.addEventListener('load', () => {
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
                 utilUI.removeAllHighlights(svg);
+                utilUI.resetLogicBit();
                 pathHighlighter.resetHighlights();
 
-                // utilUI.removeAllHighlights(svg);
                 componentInputCounter = {};
                 let result = format.parseFormatInstruction(instruction);
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    
@@ -267,10 +285,11 @@ window.addEventListener('load', () => {
                 }
                 else {
                     if (parsedInstruction?.label) {
-                        console.log("raw: ", parsedInstruction.raw, parsedInstruction.raw.includes(":"));
-                        if (!(parsedInstruction.label in saveIndexLabel) && parsedInstruction.raw.includes(parsedInstruction.label) == false) {
+                        if (
+                            !(parsedInstruction.label in saveIndexLabel) && 
+                            parsedInstruction.raw.includes(parsedInstruction.label) == false
+                        ) {
                             saveIndexLabel[parsedInstruction.label] = i;
-                            console.log("label: ", parsedInstruction.label, i);
                         }
                     }
                 }
