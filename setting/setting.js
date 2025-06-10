@@ -317,7 +317,7 @@ export const setBitOfInstruction = {
     "MemWrite": "0",
     "MemToReg": "0",
     "MemRead": "0",
-    "ToALU": "0110",
+    "ToALU": "0110",        
     "ALUOp": "10"
   },
   "LDUR": {

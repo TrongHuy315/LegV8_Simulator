@@ -29,8 +29,20 @@ let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của
 
 // Register storage (if not already declared)
 let registers = Array(32).fill(0); // 32 registers, all initialized to 0
-let memory = Array(100000).fill(0); 
+let memory = Array(1000).fill(0); 
+let address = Array(1000).fill(0);
 let componentInputCounter = {};
+
+address[0] = 4194304;
+for(let i = 1; i < 1000; i++) {
+    address[i] = address[i - 1] + 4;
+}
+let changeToIDInstruction = pc => {
+    for(let i = 0; i < 1000; i++) {
+        if (address[i] == pc) return i;
+    }
+    return -1;
+}
 
 let displayState = {
     registerFormat: 'hex',
@@ -221,8 +233,9 @@ async function simulateStep(parsedInstruction) {
             label = parsedInstruction.label;
         }
     }
-    else if (opcode === 'B') {
+    else if (opcode === 'B' || opcode == 'BL') {
         label = parsedInstruction.label;
+        console.log("Branc and Link: ", label);
     }
     let instructionGraph = utilUI.calculateGraph(opcode, branch);
     if (instructionGraph && initialAnims.length > 0) {
@@ -246,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light
     theme.applyTheme(savedTheme, themeToggleButton);
 });
-
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
@@ -292,6 +304,13 @@ window.addEventListener('load', () => {
                             saveIndexLabel[parsedInstruction.label] = i;
                         }
                     }
+                }
+                if (parsedInstruction.opcode == 'BL') {
+                    registers[30] = address[i];
+                }
+                if (parsedInstruction.opcode == 'BR') {
+                    i = changeToIDInstruction(registers[parsedInstruction.rd]);
+                    console.log(registers[parsedInstruction.rd], i);
                 }
             }
             if (label != null) {

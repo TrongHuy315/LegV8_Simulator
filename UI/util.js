@@ -1,6 +1,7 @@
 import * as setting from '../setting/setting.js'
 import * as normalR from '../script/Animation/R_format/normal.js';
 import * as flagR from '../script/Animation/R_format/addFlag.js';
+import * as branchRegister from '../script/Animation/R_format/BranchRegister.js';
 import * as flagI from '../script/Animation/I_format/addFlag.js';
 import * as normalI from '../script/Animation/I_format/normal.js';
 import * as ldur from '../script/Animation/D_format/ldur.js';
@@ -8,6 +9,7 @@ import * as stur from '../script/Animation/D_format/stur.js';
 import * as CBZ_NotBranch from '../script/Animation/CB_format/CBZ_notBranch.js';
 import * as CBZ_Branch from '../script/Animation/CB_format/CBZ_Branch.js';
 import * as Branch from '../script/Animation/B_format/branch.js';
+import * as BranchLink from '../script/Animation/B_format/BracnhLink.js';
 import {setTextById} from './logic_bit_set.js'
 
 // Hàm tiện ích để lấy phần tử SVG bằng ID (An toàn hơn)
@@ -135,6 +137,9 @@ export function calculateEndAction(opcode, animId, branch = false) {
     if (opcode === 'ADD' || opcode === 'ORR' || opcode === 'SUB' || opcode === 'EOR' || opcode === 'AND') {
         endAction = normalR.animationEndActions;
     }
+    else if (opcode === 'BR') {
+        endAction = branchRegister.animationEndActions;
+    }
     else if(opcode === 'ADDI' || opcode === 'ORRI' || opcode === 'SUBI' || opcode === 'EORI' || opcode === 'ANDI') {
         endAction = normalI.animationEndActions;
     }
@@ -154,6 +159,7 @@ export function calculateEndAction(opcode, animId, branch = false) {
     }
     else if (opcode === 'B' || opcode === 'BL') {
         if (opcode === 'B') endAction = Branch.animationEndActions;
+        else endAction = BranchLink.animationEndActions;
     }
     return endAction[animId];
 }
@@ -181,6 +187,7 @@ export function calculateGraph(opcode, branch = false) {
     }
     else if (opcode === 'B' || opcode === 'BL') {
         if (opcode === 'B') instructionGraph = Branch.animation();
+        else instructionGraph = BranchLink.animation();
     }
     return instructionGraph;
 }
@@ -217,10 +224,8 @@ export function calRequirements(opcode) {
         cnt = [1, 999, 1, 2]
     }
     else if (opcode === 'B' || opcode === 'BL') {
-        if (opcode === 'B') {
-            cnt = [1, 999, 999, 999];
-            requirements["and-gate2"] = 1;
-        }
+        cnt = [1, 999, 999, 999];
+        requirements["and-gate2"] = 1;
     }
     else {
         cnt = [1, 2, 2, 2];

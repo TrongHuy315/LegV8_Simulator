@@ -1,4 +1,4 @@
-export const R_FORMAT_OPCODES = ['ADD', 'SUB', 'AND', 'ORR', 'EOR', 'LSL', 'LSR', 'ADDS', 'SUBS']; // Danh sách các mã lệnh (opcode) R-Format được hỗ trợ
+export const R_FORMAT_OPCODES = ['ADD', 'SUB', 'AND', 'ORR', 'EOR', 'LSL', 'LSR', 'ADDS', 'SUBS', 'BR']; // Danh sách các mã lệnh (opcode) R-Format được hỗ trợ
 export function convert(line, rFormatRegex) {
     let match = line.match(rFormatRegex);
     const opcode = match[1].toUpperCase(); 
@@ -45,6 +45,26 @@ export function convertI(line, rFormatRegexNumber) {
         rn: rn, 
         rm: 0,
         shamt: shamt,
+        raw: line 
+    };
+}
+
+export function convertBranch(line, rFormatBranchR) {
+    let match = line.match(rFormatBranchR);
+    const opcode = match[1].toUpperCase(); 
+    const rd = parseInt(match[2], 10); 
+    if (rd > 31) {
+        return { 
+            error: true,
+            message: `Số thanh ghi không hợp lệ (phải từ 0-31).`,
+            raw: line 
+        };
+    }
+
+    return {
+        type: 'R', 
+        opcode: opcode, 
+        rd: rd, 
         raw: line 
     };
 }

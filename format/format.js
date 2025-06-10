@@ -34,8 +34,16 @@ export function parseFormatInstruction(line) {
     if (!line || line.startsWith('//') || line.startsWith('#')) {
         return null; 
     }
+    const specialRegisters = {
+        SP: 'X28',
+        FP: 'X29',
+        LR: 'X30',
+        XZR: 'X31'
+    };
+    line = line.replace(/\b(SP|FP|LR|XZR)\b/g, match => specialRegisters[match]);
     const rFormatRegex = /^\s*(ADD|SUB|AND|ORR|EOR|ADDS|SUBS)\s+X(\d+)\s*,\s*X(\d+)\s*,\s*X(\d+)\s*(?:#.*)?$/i;
     const rFormatRegexNumber = /^\s*(LSL|LSR)\s+X(\d+)\s*,\s*X(\d+)\s*,\s*#(\d+)\s*(?:#.*)?$/i;
+    const rFormatBranchR = /^\s*(BR)\s+X(\d+)\s*(?:#.*)?$/i;
     const dFormaxRegex = /^\s*(LDUR|STUR)\s+X(\d+)\s*,\s*\[X(\d+)\s*,\s*#(-?\d+)\s*\](?:#.*)?$/i;
     const iFormatRegex = /^\s*(ADDI|SUBI|ANDI|ORRI|EORI|ADDIS|SUBIS)\s+X(\d+)\s*,\s*X(\d+)\s*,\s*#(\d+)\s*(?:#.*)?$/i;
     const CBFormaxRegex = /^\s*(CBZ|CBNZ)\s+X(\d+)\s*,\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:#.*)?$/i;
@@ -47,7 +55,10 @@ export function parseFormatInstruction(line) {
             return R_format.convert(line, rFormatRegex);
         } else if (line.match(rFormatRegexNumber)) {
             return R_format.convertI(line, rFormatRegexNumber);
-        } else if (line.match(dFormaxRegex)) {
+        } else if (line.match(rFormatBranchR)) {
+            return R_format.convertBranch(line, rFormatBranchR);
+        } 
+        else if (line.match(dFormaxRegex)) {
             return D_format.convert(line, dFormaxRegex);
         } else if (line.match(CBFormaxRegex)) {
             return CB_format.convert(line, CBFormaxRegex);
