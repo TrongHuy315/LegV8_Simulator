@@ -7,7 +7,7 @@ export function convert(line, BFormaxRegex) {
     let match = line.match(BFormaxRegex);
     const opcode = match[1].toUpperCase(); 
     const label = match[2]; 
-    console.log()
+    // console.log()
     // console.log("opcode: ", opcode, "label: ", label);
     return {
         type: 'B', 
