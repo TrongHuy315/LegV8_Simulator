@@ -394,5 +394,20 @@ export const setBitOfInstruction = {
     "MemRead": "0",
     "ToALU": "0000",
     "ALUOp": "00"
+  },
+  "BL": {
+    "Reg2Loc": "0",
+    "RegWrite": "0",
+    "ALUSrc": "0",
+    "FlagWrite": "0",
+    "FlagBranch": "0",
+    "ZeroBranch": "0",
+    "UncondBranch": "0",
+    "OrToMux": "0",
+    "MemWrite": "0",
+    "MemToReg": "0",
+    "MemRead": "0",
+    "ToALU": "0000",
+    "ALUOp": "00"
   }
 };
