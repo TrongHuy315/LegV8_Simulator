@@ -34,6 +34,8 @@ export function parseFormatInstruction(line) {
     if (!line || line.startsWith('//') || line.startsWith('#')) {
         return null; 
     }
+    line = line.replace(/\/\/.*$/g, '').trim();
+    //line = line.replace(/\/\/.*$/g, '').replace(/.*$/g, '').trim();
     const specialRegisters = {
         SP: 'X28',
         FP: 'X29',

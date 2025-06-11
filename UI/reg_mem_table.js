@@ -1,53 +1,11 @@
 // --- START OF FILE reg_mem_table.js ---
 
-// Hàm này nhận vào:
-// - container: Phần tử DOM để render bảng
-// - registers: Mảng dữ liệu thanh ghi
-// - displayState: Trạng thái hiển thị (hex/dec)
-// export function renderRegisterTable(container, registers, displayState) {
-//     if (!container) return;
-//     console.log("html: ", registers[1]);
-//     const specialNames = { 28: 'SP', 29: 'FP', 30: 'LR', 31: 'XZR' };
+// import { registers } from "../script/main";
 
-//     let gridHtml = '<div class="register-grid">';
-//     for (let i = 0; i < 16; i++) {
-//         const regName1 = specialNames[i] || `X${i}`;
-//         const value1 = registers[i];
-//         const displayValue1 = displayState.registerFormat === 'hex'
-//             ? `0x${value1.toString(16).padStart(8, '0')}` : value1.toString(10);
-        
-//         const regName2 = specialNames[i + 16] || `X${i + 16}`;
-//         const value2 = registers[i + 16];
-//         const displayValue2 = displayState.registerFormat === 'hex'
-//             ? `0x${value2.toString(16).padStart(8, '0')}` : value2.toString(10);
-
-//         gridHtml += `
-//             <div class="register-item">
-//                 <span class="reg-name">${regName1}</span>
-//                 <span class="reg-value">${displayValue1}</span>
-//             </div>
-//             <div class="register-item">
-//                 <span class="reg-name">${regName2}</span>
-//                 <span class="reg-value">${displayValue2}</span>
-//             </div>
-//         `;
-//     }
-//     gridHtml += '</div>';
-
-//     const hexActive = displayState.registerFormat === 'hex' ? 'active' : '';
-//     const decActive = displayState.registerFormat === 'dec' ? 'active' : '';
-
-//     container.innerHTML = `
-//         <div class="format-toggle" data-view="registers">
-//             <button class="${hexActive}" data-format="hex">Hex</button>
-//             <button class="${decActive}" data-format="dec">Dec</button>
-//         </div>
-//         ${gridHtml}
-//     `;
-// }
-export function renderRegisterTable(container, registers, displayState) {
+import {registers, memory} from '../script/main.js';
+export function renderRegisterTable(container, displayState) {
     if (!container) return;
-
+    // console.log("register table: ", registers);
     const specialNames = { 28: 'SP', 29: 'FP', 30: 'LR', 31: 'XZR' };
 
     let tableHtml = '<table class="register-table">';
@@ -86,7 +44,7 @@ export function renderRegisterTable(container, registers, displayState) {
 // - memory: Mảng dữ liệu bộ nhớ
 // - displayState: Trạng thái hiển thị (hex/dec)
 
-export function renderMemoryView(container, memory, displayState) {
+export function renderMemoryView(container, displayState) {
     if (!container) return;
 
     const memoryToShow = 32; // Show 32 memory entries
@@ -129,22 +87,22 @@ export function renderMemoryView(container, memory, displayState) {
     `;
 }
 // Hàm này nhận vào tất cả các đối tượng cần thiết để thiết lập listener
-export function setupToggleListeners(container, displayState, registers, memory, regContainer, memContainer) {
+export function setupToggleListeners(container, displayState, regContainer, memContainer) {
     if (!container) return;
 
     container.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-format]');
         if (!button) return;
-
+        // console.log("register: ", registers);
         const view = button.parentElement.dataset.view;
         const format = button.dataset.format;
 
         if (view === 'registers') {
             displayState.registerFormat = format;
-            renderRegisterTable(regContainer, registers, displayState); // Gọi lại với đúng tham số
+            renderRegisterTable(regContainer, displayState); // Gọi lại với đúng tham số
         } else if (view === 'memory') {
             displayState.memoryFormat = format;
-            renderMemoryView(memContainer, memory, displayState); // Gọi lại với đúng tham số
+            renderMemoryView(memContainer, displayState); // Gọi lại với đúng tham số
         }
     });
 }

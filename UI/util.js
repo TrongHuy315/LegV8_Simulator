@@ -194,7 +194,7 @@ export function calculateGraph(opcode, branch = false) {
 
 let additionComponent = ["flags", "data-memory", "alu-control", "alu"];
 export function calRequirements(opcode) {
-    let requirements = setting.componentInputRequirements;
+    let requirements = structuredClone(setting.componentInputRequirements);
     let cnt;
     if (opcode === 'ADD' || opcode === 'SUB' || 
         opcode === 'ORR' || opcode === 'EOR' || opcode === 'AND'
@@ -205,6 +205,7 @@ export function calRequirements(opcode) {
         opcode === 'ORRI' || opcode === 'EORI' || opcode === 'ANDI'
     ) {
         cnt = [1, 999, 2, 3];
+        console.log("cnt: ", cnt);
     }
     else if (opcode === 'ADDS' || opcode === 'SUBS') {
         cnt = [2, 999, 2, 3];
@@ -233,5 +234,6 @@ export function calRequirements(opcode) {
     for(let i = 0; i < additionComponent.length; i++) {
         requirements[additionComponent[i]] = cnt[i];
     }
+    // console.log("requirements: ", setting.componentInputRequirements);
     return requirements;
 }

@@ -28,8 +28,8 @@ let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId:
 let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của <animateMotion>)
 
 // Register storage (if not already declared)
-let registers = Array(32).fill(0); // 32 registers, all initialized to 0
-let memory = Array(1000).fill(0); 
+export let registers = Array(32).fill(0); // 32 registers, all initialized to 0
+export let memory = Array(1000).fill(0); 
 let address = Array(1000).fill(0);
 let componentInputCounter = {};
 
@@ -60,8 +60,9 @@ function executeFormat(parsedInstruction) {
             break;
         }
     }
-    regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
-    regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
+    // console.log(registers[1]);
+    regmemtable.renderRegisterTable(registerTableContainer, displayState);
+    regmemtable.renderMemoryView(memoryTableContainer, displayState);
 }
 
 function parseDuration(durationString) {
@@ -264,6 +265,7 @@ window.addEventListener('load', () => {
         simulateButton.addEventListener('click', async () => {
             registers = Array(32).fill(0); 
             memory = Array(100000).fill(0); 
+            let stack = [];
             instructionEditor.value = format.normalizeText(instructionEditor.value);
             const instructions = instructionEditor.value.split('\n').filter(line => {
                 const trimmed = line.trim();
@@ -289,7 +291,7 @@ window.addEventListener('load', () => {
                 let result = format.parseFormatInstruction(instruction);
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    
                 await simulateStep(parsedInstruction);
-                console.log(label);
+                // console.log(label);
                 if (label != null) {
                     if (label in saveIndexLabel) {
                         i = saveIndexLabel[label] - 1;
@@ -306,11 +308,14 @@ window.addEventListener('load', () => {
                     }
                 }
                 if (parsedInstruction.opcode == 'BL') {
-                    registers[30] = address[i];
+                    // registers[30] = address[i];
+                    stack.push(address[i]);
                 }
-                if (parsedInstruction.opcode == 'BR') {
-                    i = changeToIDInstruction(registers[parsedInstruction.rd]);
-                    console.log(registers[parsedInstruction.rd], i);
+                if (parsedInstruction.opcode == 'BR' && stack.length > 0) {
+                    i = changeToIDInstruction(stack[stack.length - 1]);
+                    console.log(stack, i);
+                    stack.pop();
+                    // console.log(registers[parsedInstruction.rd], i);
                 }
             }
             if (label != null) {
@@ -350,17 +355,15 @@ window.addEventListener('load', () => {
 
     if (registerTableContainer && memoryTableContainer) {
         // Gọi hàm render và truyền các tham số cần thiết
-        regmemtable.renderRegisterTable(registerTableContainer, registers, displayState);
-        regmemtable.renderMemoryView(memoryTableContainer, memory, displayState);
-        
+        regmemtable.renderRegisterTable(registerTableContainer, displayState);
+        regmemtable.renderMemoryView(memoryTableContainer, displayState);
+        // console.log(registers);
         // Gọi hàm setup listener và truyền các tham số cần thiết
         regmemtable.setupToggleListeners(
             dataDisplayContainer, 
             displayState, 
-            registers, 
-            memory, 
             registerTableContainer, 
-            memoryTableContainer
+            memoryTableContainer,
         );
     }
 

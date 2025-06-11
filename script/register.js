@@ -48,6 +48,7 @@ export function IFormat(parsedInstruction, registers, memory) {
 
     switch (opcode) {
         case 'ADDI':
+            //console.log(rd, rn, imm);
             registers[rd] = registers[rn] + imm; 
             break;
         case 'SUBI':
