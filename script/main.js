@@ -260,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light
     theme.applyTheme(savedTheme, themeToggleButton);
 });
+
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
@@ -381,4 +382,44 @@ window.addEventListener('load', () => {
         }
     });
     console.log("Global event listeners initialized.");
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const importInput = document.getElementById('import-code-input');
+
+    // Lắng nghe sự kiện 'change' trên input file
+    importInput.addEventListener('change', (event) => {
+        const files = event.target.files;
+
+        // Kiểm tra xem người dùng có chọn file nào không
+        if (files.length === 0) {
+            console.log('No file selected.');
+            return;
+        }
+
+        const file = files[0];
+
+        // Tạo một đối tượng FileReader để đọc file
+        const reader = new FileReader();
+
+        // Định nghĩa hành động sẽ làm khi file được đọc xong
+        reader.onload = (e) => {
+            // Lấy nội dung file từ kết quả của reader
+            const fileContent = e.target.result;
+            // Gán nội dung đó vào textarea
+            instructionEditor.value = fileContent;
+            // Xóa giá trị của input để có thể upload lại cùng file
+            importInput.value = '';
+
+            editor.updateLineNumbers(instructionEditor, lineNumbersElement);
+        };
+
+        // Báo lỗi nếu có vấn đề khi đọc file
+        reader.onerror = (e) => {
+            alert('Error reading file: ' + e.target.error.name);
+        };
+
+        // Bắt đầu đọc file dưới dạng văn bản (text)
+        reader.readAsText(file);
+    });
 });

@@ -11,7 +11,13 @@
     <div id="simulation-container">
         <!-- Khu vực điều khiển (Editor, Button, Output) -->
         <div id="controls">
-            <label for="instruction-editor">Instructions:</label>
+            <div class="editor-header">
+                <label for="instruction-editor">Instructions:</label>
+
+                <input type="file" id="import-code-input" accept=".s,.asm,.txt" hidden>
+                <label for="import-code-input" class="import-button">Import Code</label>
+            </div>
+            
             <div class="editor-wrapper">
                 <div class="line-numbers" id = "lineNumbers">
                     <!--  -->

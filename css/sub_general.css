@@ -196,6 +196,42 @@ body {
     transition: color 0.5s ease;
 }
 
+/* CSS cho container chứa 2 label */
+.editor-header {
+    display: flex;                /* Kích hoạt Flexbox */
+    justify-content: space-between; /* Đẩy các phần tử con ra 2 phía */
+    align-items: center;          /* Căn giữa các phần tử theo chiều dọc (đẹp hơn) */
+    margin-bottom: 10px;          /* Tạo khoảng cách với editor bên dưới */
+}
+
+/* 
+   Điều chỉnh lại CSS cho nút Import.
+   Chúng ta không cần margin-bottom ở đây nữa vì đã có ở .editor-header
+*/
+.import-button {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.import-button:hover {
+    background-color: #0056b3;
+}
+
+/* 
+   CSS cho label "Instructions:".
+   Xóa margin-bottom mặc định của nó đi để align-items hoạt động tốt nhất.
+*/
+.editor-header label:first-child {
+    margin-bottom: 0;
+}
+
 .editor-wrapper {
     display: flex;
     position: relative;
