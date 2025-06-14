@@ -11,6 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
+    const overlayControls = document.getElementById('svg-overlay-buttons');
+    if (overlayControls) {
+        overlayControls.addEventListener('mousedown', (event) => {
+            event.stopPropagation();
+        });
+
+        overlayControls.addEventListener('wheel', (event) => {
+            event.stopPropagation();
+        });
+    }
+
     // *** Initial values stored for reset ***
     const initialScale = 1;
     const initialOffsetX = 0;

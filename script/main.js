@@ -1,13 +1,13 @@
-// --- START OF FILE general.js ---
-
 import * as format from '../format/format.js' // Và các module parse khác nếu cần
-import * as utilUI from '../UI/util.js';
-import * as setting from '../setting/setting.js';
-import * as theme from '../UI/theme.js';
+import * as utilUI from '../UI/util.js'
+import * as setting from '../setting/setting.js'
+import * as theme from '../UI/theme.js'
 import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from '../UI/reg_mem_table.js'
-import * as pathHighlighter from './pathHighlighter.js'; 
+import * as pathHighlighter from './pathHighlighter.js'
+import * as animationControl from '../UI/animation_control.js'
+import * as speedControl from '../UI/speedControl.js'
 import {setTextById} from '../UI/logic_bit_set.js'
 
 // --- Tham chiếu đến các Phần tử DOM ---
@@ -23,8 +23,12 @@ const registerTableContainer = document.getElementById('register-table-container
 const memoryTableContainer = document.getElementById('memory-table-container');
 const dataDisplayContainer = document.getElementById('data-display-container');
 
+const pauseResumeButton = document.getElementById('pause-resume-button');
+const speedSlider = document.getElementById('speed-slider'); 
+const speedMultipliers = [0.25, 0.5, 1, 2, 4];
+
 // --- Trạng thái Hoạt ảnh Không Đồng Bộ ---
-let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
+export let activeTimeouts = {}; // Lưu các timeout đang chờ kết thúc: { animId: timeoutId }
 let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của <animateMotion>)
 
 // Register storage (if not already declared)
@@ -80,14 +84,19 @@ function parseDuration(durationString) {
 
 function triggerAnimation(animId, graph, opcode) {
     return new Promise((resolve, reject) => {
+        if (animationControl.getIsPaused()) {
+            resolve();
+            return;
+        }
+
+        // Nếu không có đồ thị, không có dữ liệu animation, hoặc animation đã chạy, bỏ qua.
         if (!graph || !graph[animId] || runningAnimations.has(animId)) {
-            resolve(); // Nothing to do
+            resolve();
             return;
         }
 
         pathHighlighter.highlightPathForAnimation(animId);
 
-        //console.log(animId);
         const animData = graph[animId];
         const nextAnims = animData.next || [];
         const animationElement = utilUI.getElement(svg, animId);
@@ -96,95 +105,136 @@ function triggerAnimation(animId, graph, opcode) {
 
         if (!animationElement) {
             console.warn(`Không tìm thấy <animateMotion> với ID ${animId}`);
-            resolve(); // End early
+            resolve();
             return;
         }
 
         const durationAttr = animationElement.getAttribute('dur');
-        const durationMs = parseDuration(durationAttr);
+        const baseDurationMs = parseDuration(durationAttr);
+
+        const sliderValue = parseInt(speedSlider.value, 10);
+        const currentMultiplier = speedMultipliers[sliderValue];
+        
+        // Tính toán thời gian thực tế sẽ mất để animation hoàn thành
+        const actualDurationMs = baseDurationMs / currentMultiplier;
 
         if (dotElement) {
             dotElement.style.visibility = 'visible';
         }
 
-        try {
-            animationElement.beginElement();
-            runningAnimations.add(animId);
-            //console.log("ID: ", animId);
-            const timeoutId = setTimeout(async () => {
-                if (dotElement) {
-                    utilUI.hideDotForAnim(svg, runningAnimations, animId);
-                } else {
-                    runningAnimations.delete(animId);
+        const onAnimationEnd = async () => {
+            // Xóa chính nó khỏi danh sách đang theo dõi khi đã được thực thi
+            delete activeTimeouts[animId];
+
+            if (dotElement) {
+                utilUI.hideDotForAnim(svg, runningAnimations, animId);
+            } else {
+                runningAnimations.delete(animId);
+            }
+
+            const componentIdToHighlight = setting.animationToComponentHighlight[animId];
+            let checkExists = (component) => {
+                if (!componentInputCounter[component]) {
+                    componentInputCounter[component] = 0;
                 }
+            }
+            let endAction = utilUI.calculateEndAction(opcode, animId); 
+            if (typeof endAction === 'function') {
+                endAction();
+            }
+            else if (Array.isArray(endAction)) {
+                endAction.forEach(fn => fn());
+            }
 
-                delete activeTimeouts[animId];
-
-                const componentIdToHighlight = setting.animationToComponentHighlight[animId];
-                let checkExists = (component) => {
-                    if (!componentInputCounter[component]) {
-                        componentInputCounter[component] = 0;
+            if (componentIdToHighlight) {
+                utilUI.highlightComponent(svg, componentIdToHighlight);
+            }
+            let requirements = utilUI.calRequirements(opcode);
+            let input;
+            if (animId === 'anim-13') {
+                input = 'registers-read1';
+            }
+            else if (animId === 'anim-21') {
+                input = 'registers-read2';
+            }
+            else {
+                input = componentIdToHighlight;
+            }
+            checkExists(input);
+            ++componentInputCounter[input];
+            if (componentInputCounter[input] >= (requirements[input] || 0)) {
+                // Logic đặc biệt cho các cổng logic
+                if (setting.setBitOfInstruction[opcode]) {
+                    if (input == 'or-gate') {
+                        let flag = 'UncondBranch';
+                        setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
                     }
-                }
-                let endAction = utilUI.calculateEndAction(opcode, animId); 
-                if (typeof endAction === 'function') {
-                    endAction();
-                }
-                else if (Array.isArray(endAction)) {
-                    endAction.forEach(fn => fn());
-                }
-
-                if (componentIdToHighlight) {
-                    utilUI.highlightComponent(svg, componentIdToHighlight);
-                }
-                let requirements = utilUI.calRequirements(opcode);
-                let input;
-                if (animId === 'anim-13') {
-                    input = 'registers-read1';
-                }
-                else if (animId === 'anim-21') {
-                    input = 'registers-read2';
-                }
-                else {
-                    input = componentIdToHighlight;
-                }
-                checkExists(input);
-                ++componentInputCounter[input];
-                if (componentInputCounter[input] >= (requirements[input] || 0)) {
-                    // Special case
-                    if (setting.setBitOfInstruction[opcode]) {
-                        if (input == 'or-gate') {
-                            let flag = 'UncondBranch';
-                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
-                        }
-                        else if (input == 'and-gate1') {
-                            let flag = 'FlagBranch';
-                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
-                        }
-                        else if (input == 'and-gate2') {
-                            let flag = 'ZeroBranch';
-                            setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
-                        }
+                    else if (input == 'and-gate1') {
+                        let flag = 'FlagBranch';
+                        setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
                     }
-                    componentInputCounter[input] = 0;
-                    await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph, opcode)));
-                }
-                resolve(); 
-            }, durationMs);
-            setTimeout(() => {
-                if (setting.animToFlag[animId]) {
-                    let flag = setting.animToFlag[animId];
-                    if (setting.setBitOfInstruction[opcode]) {
+                    else if (input == 'and-gate2') {
+                        let flag = 'ZeroBranch';
                         setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
                     }
                 }
-            }, durationMs);
+                componentInputCounter[input] = 0;
+                // Kích hoạt các animation tiếp theo trong chuỗi
+                await Promise.all(nextAnims.map(nextId => triggerAnimation(nextId, graph, opcode)));
+            }
+            resolve(); 
+        };
 
-            activeTimeouts[animId] = timeoutId;
+        const onFlagTimeout = () => {
+             // Xóa chính nó khỏi danh sách đang theo dõi
+            delete activeTimeouts[animId + '-flag'];
+            
+            if (setting.animToFlag[animId]) {
+                let flag = setting.animToFlag[animId];
+                if (setting.setBitOfInstruction[opcode]) {
+                    setTextById(flag, setting.setBitOfInstruction[opcode][flag]);
+                }
+            }
+        };
+
+        try {
+            if (animationElement.playbackRate !== undefined) {
+                animationElement.playbackRate = currentMultiplier;
+            }
+
+            animationElement.beginElement();
+            runningAnimations.add(animId);
+            
+            // Đặt timer chính và lưu thông tin chi tiết của nó
+            const mainTimeoutId = setTimeout(onAnimationEnd, actualDurationMs);
+            activeTimeouts[animId] = {
+                id: mainTimeoutId,
+                startTime: Date.now(),
+                baseDuration: baseDurationMs,
+                callback: onAnimationEnd
+            };
+
+            // Nếu có một hành động cờ song song, đặt timer cho nó với một ID duy nhất
+            if (setting.animToFlag[animId]) {
+                const flagTimeoutId = setTimeout(onFlagTimeout, actualDurationMs);
+                const flagAnimId = animId + '-flag'; // Tạo ID duy nhất
+                activeTimeouts[flagAnimId] = {
+                    id: flagTimeoutId,
+                    startTime: Date.now(),
+                    baseDuration: baseDurationMs,
+                    callback: onFlagTimeout
+                };
+            }
+
         } catch (e) {
             console.error(`Lỗi khi bắt đầu ${animId}:`, e);
+            
+            // Dọn dẹp nếu có lỗi xảy ra
             runningAnimations.delete(animId);
-            resolve(); // Fail-safe
+            delete activeTimeouts[animId];
+            delete activeTimeouts[animId + '-flag']; // Cũng xóa timeout của cờ
+            
+            resolve(); // Đảm bảo promise vẫn được giải quyết để không làm treo chuỗi
         }
     });
 }
@@ -366,6 +416,24 @@ window.addEventListener('load', () => {
             registerTableContainer, 
             memoryTableContainer,
         );
+
+        if (pauseResumeButton) {
+            pauseResumeButton.addEventListener('click', () => {
+                if (animationControl.getIsPaused()) {
+                    animationControl.resume(svg, activeTimeouts);
+                    pauseResumeButton.innerHTML = '⏸️'; // Icon Pause
+                    pauseResumeButton.title = 'Pause Animation (P)';
+                } else {
+                    animationControl.pause(svg, activeTimeouts);
+                    pauseResumeButton.innerHTML = '▶️'; // Icon Play/Resume
+                    pauseResumeButton.title = 'Resume Animation (P)';
+                }
+            });
+        }
+    }
+
+    if (svg) {
+        speedControl.initialize(svg);
     }
 
     // --- KEYBOARD SHORTCUTS ---
@@ -379,6 +447,12 @@ window.addEventListener('load', () => {
             if (themeToggleButton && theme) { // Kiểm tra theme
                 theme.toggleTheme(localStorage, themeToggleButton);
             }
+        }
+
+        if ((event.key === 'p' || event.key === 'P') && event.target.tagName !== 'TEXTAREA') {
+            event.preventDefault();
+            // Kích hoạt sự kiện click trên nút để dùng chung logic
+            pauseResumeButton.click();
         }
     });
     console.log("Global event listeners initialized.");

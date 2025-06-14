@@ -35,6 +35,14 @@
 
             <!-- **** START: Add Buttons Container **** -->
             <div id="svg-overlay-buttons">
+                <div class="control-group-left">
+                    <button id="pause-resume-button" title="Pause/Resume Animation (P)">⏸️</button>
+                    <div class="speed-control">
+                        <input type="range" id="speed-slider" min="0" max="4" value="2" step="1" title="Animation Speed">
+                        <span id="speed-label">1.00x</span>
+                    </div>
+                </div>
+                
                 <button id="reset-zoom-button" title="Reset Zoom & Pan (R)">🔄</button>
                 <button id="theme-toggle-button" title="Toggle Theme (T)">🌓</button>
                  <!-- Add title attribute for tooltips -->

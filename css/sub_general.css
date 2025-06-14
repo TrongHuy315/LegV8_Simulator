@@ -365,13 +365,97 @@ body {
 }
 
 /* --- START: Styles for Overlay Buttons --- */
+
 #svg-overlay-buttons {
     position: absolute;
     top: 10px;
+    left: 10px;
     right: 10px;
-    z-index: 10; /* Ensure buttons are above SVG */
+    z-index: 10;
     display: flex;
+    align-items: center; /* Căn giữa các mục theo chiều dọc */
     gap: 8px;
+}
+
+/* 
+ * THAY ĐỔI: Áp dụng margin cho nhóm thay vì một nút đơn lẻ
+ */
+.control-group-left {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Khoảng cách giữa nút pause và thanh tốc độ */
+    margin-right: auto; /* Đẩy mọi thứ khác sang phải */
+}
+
+#pause-resume-button {
+    margin-right: auto; /* Tự động chiếm hết không gian trống ở bên phải nút này */
+}
+
+#svg-overlay-buttons button {
+    background-color: #f0f0f0; /* Màu nền sáng */
+    color: #333; /* Màu chữ tối */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+#svg-overlay-buttons button:hover {
+    background-color: #e0e0e0; /* Màu nền khi di chuột qua */
+}
+
+#svg-overlay-buttons button:active {
+    transform: translateY(1px); /* Hiệu ứng nhấn nút */
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--button-bg-color, #f0f0f0);
+    padding: 4px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color, #ccc);
+}
+
+#speed-slider {
+    -webkit-appearance: none; /* Xóa style mặc định */
+    appearance: none;
+    width: 80px; /* Chiều rộng của thanh trượt */
+    height: 8px;
+    background: var(--slider-track-color, #ddd);
+    outline: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--slider-thumb-color, #007bff);
+    border-radius: 50%;
+}
+
+#speed-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--slider-thumb-color, #007bff);
+    border-radius: 50%;
+    border: none;
+}
+
+#speed-label {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    color: var(--text-color, #333);
+    font-weight: bold;
+    min-width: 45px; /* Đảm bảo layout không bị nhảy khi số thay đổi */
+    text-align: left;
 }
 
 #reset-zoom-button,
