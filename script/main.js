@@ -109,8 +109,8 @@ function triggerAnimation(animId, graph, opcode) {
             return;
         }
 
-        const durationAttr = animationElement.getAttribute('dur');
-        const baseDurationMs = parseDuration(durationAttr);
+        // const durationAttr = animationElement.getAttribute('dur');
+        const baseDurationMs = parseDuration(setting.timeForEachAnim[animId]);
 
         const sliderValue = parseInt(speedSlider.value, 10);
         const currentMultiplier = speedMultipliers[sliderValue];
@@ -202,7 +202,10 @@ function triggerAnimation(animId, graph, opcode) {
                 animationElement.playbackRate = currentMultiplier;
             }
 
+            const newDuration = `${actualDurationMs / 1000}s`; // Convert milliseconds to seconds
+            animationElement.setAttribute('dur', newDuration);
             animationElement.beginElement();
+            // animationElement.setAttribute('dur', baseDurationMs);
             runningAnimations.add(animId);
             
             // Đặt timer chính và lưu thông tin chi tiết của nó
