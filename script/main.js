@@ -317,64 +317,102 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            registers = Array(32).fill(0); 
-            memory = Array(100000).fill(0); 
+            editor.clearActiveLine();
+            registers.fill(0); 
+            memory.fill(0); 
             let stack = [];
-            instructionEditor.value = format.normalizeText(instructionEditor.value);
-            const instructions = instructionEditor.value.split('\n').filter(line => {
-                const trimmed = line.trim();
-                return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#');
-            });
-            let saveIndexLabel = {};
-            for(let i = 0; i < instructions.length; i++) {
-                let instruction = instructions[i];
-                if (!instruction) {
-                    outputArea.textContent = JSON.stringify({
-                        status: "Bỏ qua dòng trống hoặc chú thích.",
-                        instruction: instruction
-                    }, null, 2);
-                    continue;
+            componentInputCounter = {};
+            label = null; 
+
+            const formattedCode = format.normalizeText(instructionEditor.value);
+            instructionEditor.value = formattedCode;
+            editor.updateLineNumbers();
+
+            const allFormattedLines = formattedCode.split('\n');
+            
+            // Tạo ra một mảng các OBJECT, mỗi object chứa text và originalIndex
+            const instructionsToRun = allFormattedLines
+                .map((line, index) => ({
+                    text: line,
+                    originalIndex: index 
+                }))
+                .filter(item => {
+                    const trimmed = item.text.trim();
+                    // Lọc bỏ comment, dòng trống, và dòng chỉ chứa label
+                    return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#') && !trimmed.endsWith(':');
+                });
+
+            const labelMap = new Map();
+            allFormattedLines.forEach((line, index) => {
+                const trimmedLine = line.trim();
+                if (trimmedLine.endsWith(':')) {
+                    const labelName = trimmedLine.slice(0, -1).trim().toUpperCase();
+                    labelMap.set(labelName, index);
                 }
+            });
+
+            for (let i = 0; i < instructionsToRun.length; i++) {
+                // 'currentInstruction' giờ là một OBJECT
+                let currentInstruction = instructionsToRun[i];
+                // Truy cập các thuộc tính từ OBJECT
+                let instructionText = currentInstruction.text;
+                let lineIndexToHighlight = currentInstruction.originalIndex;
+
+                editor.setActiveLine(lineIndexToHighlight);
+
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
-                utilUI.removeAllHighlights(svg);
-                utilUI.resetLogicBit();
                 pathHighlighter.resetHighlights();
-
-                componentInputCounter = {};
-                let result = format.parseFormatInstruction(instruction);
+                utilUI.resetLogicBit();
+                
+                let result = format.parseFormatInstruction(instructionText);
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    
+                
                 await simulateStep(parsedInstruction);
-                // console.log(label);
-                if (label != null) {
-                    if (label in saveIndexLabel) {
-                        i = saveIndexLabel[label] - 1;
+
+                // ----- Xử lý logic nhảy (Branching) -----
+                if (label != null) { 
+                    const targetLineIndex = labelMap.get(label.toUpperCase());
+                    if (targetLineIndex !== undefined) {
+                        const nextI = instructionsToRun.findIndex(item => item.originalIndex >= targetLineIndex);
+                        if (nextI !== -1) {
+                            i = nextI - 1;
+                        } else {
+                            label = "Label_No_Executable_Instruction_Error"; break;
+                        }
+                    } else {
+                        break; 
                     }
                 }
-                else {
-                    if (parsedInstruction?.label) {
-                        if (
-                            !(parsedInstruction.label in saveIndexLabel) && 
-                            parsedInstruction.raw.includes(parsedInstruction.label) == false
-                        ) {
-                            saveIndexLabel[parsedInstruction.label] = i;
+
+                // Xử lý logic cho BL và BR
+                if (parsedInstruction?.opcode == 'BL') {
+                    if (i + 1 < instructionsToRun.length) {
+                        const returnLineIndex = instructionsToRun[i + 1].originalIndex;
+                        const returnAddress = address[returnLineIndex]; 
+                        stack.push(returnAddress);
+                    }
+                }
+                if (parsedInstruction?.opcode == 'BR' && stack.length > 0) {
+                    const returnPc = stack.pop();
+                    const returnLineIndex = changeToIDInstruction(returnPc);
+                    if (returnLineIndex !== -1) {
+                        const nextI = instructionsToRun.findIndex(item => item.originalIndex >= returnLineIndex);
+                        if (nextI !== -1) {
+                            i = nextI - 1;
                         }
                     }
                 }
-                if (parsedInstruction.opcode == 'BL') {
-                    // registers[30] = address[i];
-                    stack.push(address[i]);
-                }
-                if (parsedInstruction.opcode == 'BR' && stack.length > 0) {
-                    i = changeToIDInstruction(stack[stack.length - 1]);
-                    console.log(stack, i);
-                    stack.pop();
-                    // console.log(registers[parsedInstruction.rd], i);
-                }
             }
-            if (label != null) {
-                outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label ${label}`}, null, 2);
+
+            // Hiển thị lỗi nếu có
+            if (label != null && !label.includes("_Error")) {
+                outputArea.textContent = JSON.stringify({"error": `Không tìm thấy label "${label}"`}, null, 2);
             }
+            
+            setTimeout(() => {
+                editor.clearActiveLine();
+            }, 1000);
         });
     } else {
         console.error("Không tìm thấy nút Simulate!");
@@ -393,18 +431,16 @@ window.addEventListener('load', () => {
     if (instructionEditor) {
         // Cập nhật số dòng khi có bất kỳ thay đổi nào (gõ, dán, cắt)
         instructionEditor.addEventListener('input', () => {
-            editor.updateLineNumbers(instructionEditor, lineNumbersElement)
+            editor.updateLineNumbers();
         });
 
         // Đồng bộ cuộn giữa editor và thanh số dòng
         instructionEditor.addEventListener('scroll', () => {
-            if (lineNumbersElement) {
-                lineNumbersElement.scrollTop = instructionEditor.scrollTop;
-            }
+            editor.syncScroll();
         });
 
         // Gọi lần đầu tiên khi tải trang để hiển thị số dòng ban đầu
-        editor.updateLineNumbers(instructionEditor, lineNumbersElement); 
+        editor.updateLineNumbers(); 
     }
 
     if (registerTableContainer && memoryTableContainer) {

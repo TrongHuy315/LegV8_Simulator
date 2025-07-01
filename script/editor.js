@@ -1,38 +1,75 @@
-// --- START OF FILE editor.js ---
-export function updateLineNumbers(textAreaElement, lineNumbersElement) {
-    if (!textAreaElement || !lineNumbersElement) {
-        // console.warn("Editor elements not found for updateLineNumbers");
-        return;
-    }
+// editor.js
 
-    const text = textAreaElement.value;
-    const linesArray = text.split('\n');
-    const lineCount = linesArray.length;
+// --- Tham chiếu đến các phần tử DOM liên quan đến editor ---
+const editor = document.getElementById('instruction-editor');
+const lineNumbersContainer = document.getElementById('lineNumbers');
 
-    // Luôn hiển thị ít nhất 1 dòng số, ngay cả khi textarea trống,
-    // hoặc khớp chính xác số dòng nếu đó là ý muốn.
-    // Ví dụ: nếu textarea trống hoàn toàn, lineCount sẽ là 1 (do split trả về mảng một phần tử rỗng).
-    // Nếu muốn hiển thị "0" hoặc không hiển thị gì khi trống, cần logic khác.
-    // Hiện tại, Math.max(1, lineCount) đảm bảo luôn có ít nhất số "1".
+let currentActiveLine = -1; // Theo dõi index của dòng đang active
+
+/**
+ * Cập nhật cột số dòng dựa trên nội dung của textarea.
+ */
+export function updateLineNumbers() {
+    if (!editor || !lineNumbersContainer) return;
+
+    const text = editor.value;
+    const lineCount = text.split('\n').length;
     const numLinesToDisplay = Math.max(1, lineCount);
 
     let html = '';
     for (let i = 1; i <= numLinesToDisplay; i++) {
         html += `<span>${i}</span>`;
     }
-    lineNumbersElement.innerHTML = html;
+    lineNumbersContainer.innerHTML = html;
 
-    // Gọi syncScroll sau khi cập nhật số dòng để đảm bảo vị trí cuộn đúng
-    // nếu chiều cao của lineNumbersElement thay đổi (do thêm/bớt số dòng)
-    syncScroll(textAreaElement, lineNumbersElement);
-}
-
-export function syncScroll(textAreaElement, lineNumbersElement) {
-    if (!textAreaElement || !lineNumbersElement) {
-        // console.warn("Editor elements not found for syncScroll");
-        return;
+    // Nếu đang có một dòng active, áp lại style cho nó sau khi render lại
+    if (currentActiveLine !== -1) {
+        const activeSpan = lineNumbersContainer.children[currentActiveLine];
+        if (activeSpan) {
+            activeSpan.classList.add('active-line-number');
+        }
     }
-    // Gán scrollTop của lineNumbersElement bằng scrollTop của textAreaElement
-    lineNumbersElement.scrollTop = textAreaElement.scrollTop;
 }
-// --- END OF FILE editor.js ---
+
+/**
+ * Đồng bộ vị trí cuộn của cột số dòng.
+ */
+export function syncScroll() {
+    if (!editor || !lineNumbersContainer) return;
+    lineNumbersContainer.scrollTop = editor.scrollTop;
+}
+
+/**
+ * Xóa style active khỏi dòng hiện tại.
+ */
+export function clearActiveLine() {
+    if (currentActiveLine !== -1 && lineNumbersContainer.children[currentActiveLine]) {
+        lineNumbersContainer.children[currentActiveLine].classList.remove('active-line-number');
+    }
+    currentActiveLine = -1;
+}
+
+/**
+ * Đặt style active cho một dòng cụ thể.
+ * @param {number} lineIndex - Index của dòng (bắt đầu từ 0).
+ */
+export function setActiveLine(lineIndex) {
+    // Xóa active line cũ trước
+    clearActiveLine();
+
+    if (!lineNumbersContainer || lineIndex < 0 || lineIndex >= lineNumbersContainer.children.length) {
+        return; // Index không hợp lệ
+    }
+
+    const activeSpan = lineNumbersContainer.children[lineIndex];
+    const lineText = editor.value.split('\n')[lineIndex]?.trim();
+
+    // Chỉ active nếu dòng đó không phải là dòng trống
+    if (activeSpan && lineText) {
+        activeSpan.classList.add('active-line-number');
+        currentActiveLine = lineIndex;
+
+        // Tự động cuộn đến dòng đó nếu nó nằm ngoài tầm nhìn
+        activeSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}

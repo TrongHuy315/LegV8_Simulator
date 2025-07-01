@@ -54,7 +54,9 @@
     --control-label-fill: #198754; /* Kept green */
     --gate-fill: #d1e7dd;
     --gate-stroke: #198754;
-    --data-dot-fill: #d63384;
+    --data-dot-fill: #e63946; /* Màu đỏ hồng rực rỡ */
+    --data-dot-stroke: #f1faee; /* Viền trắng mỏng để nổi bật */
+    --data-dot-glow-color: #e63946;
     --control-dot-fill: #198754; /* Kept green */
     --highlight-stroke: #fd7e14;
     --highlight-fill: rgba(255, 235, 214, 0.75);
@@ -110,7 +112,9 @@ body.dark-theme {
     --control-label-fill: #8be9fd; /* Cyan */
     --gate-fill: #4e6e58; /* Darker green */
     --gate-stroke: #50fa7b; /* Green */
-    --data-dot-fill: #ff79c6; /* Pink */
+    --data-dot-fill: #ff79c6; /* Dracula Pink, nhưng làm sáng hơn một chút */
+    --data-dot-stroke: #f8f8f2; /* Viền trắng sáng */
+    --data-dot-glow-color: #ff79c6;
     --control-dot-fill: #8be9fd; /* Cyan */
     --highlight-stroke: #ffb86c; /* Dracula orange */
     --highlight-fill: rgba(255, 184, 108, 0.5);
@@ -340,13 +344,15 @@ body {
 #svg-container {
     flex: 1;
     min-width: 0;
-    background-color: var(--svg-container-bg); /* Use variable */
+    /*background-color: var(--svg-container-bg);*/ /* Use variable */
     border: 1px solid var(--svg-container-border); /* Use variable */
     border-radius: 12px;
     overflow: hidden;
     position: relative;
     cursor: grab;
     transition: background-color 0.5s ease, border-color 0.5s ease; /* Add transition */
+
+    z-index: 0;
 }
 
 #svg-container.dragging {
@@ -357,11 +363,43 @@ body {
     display: block;
     width: 100%;
     height: 100%;
-    background-color: var(--svg-bg); /* Use variable */
+    background-color: transparent; /*var(--svg-bg);*/ /* Use variable */
     transform-origin: 0 0;
     border: none;
     transition: background-color 0.5s ease; /* Add transition */
     /* Keep width/height from SVG tag */
+    z-index: 2;
+}
+
+#svg-container::before {
+    content: ''; /* Bắt buộc phải có */
+    position: absolute; /* Định vị tuyệt đối so với #svg-container */
+    
+    /* Kéo dài ra toàn bộ container */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    /* Đặt ảnh nền */
+    background-image: url('../images/logo.jpg'); /* << Thay đổi đường dẫn nếu cần */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain; /* 'contain' đảm bảo ảnh luôn nằm trọn trong container */
+
+    /* **** ĐIỀU KHIỂN ĐỘ MỜ **** */
+    opacity: 0.1; /* << Thay đổi giá trị này từ 0.0 (trong suốt) đến 1.0 (rõ nét) */
+    
+    /* Đảm bảo nó nằm dưới SVG */
+    z-index: 1; 
+
+    /* Thêm hiệu ứng chuyển đổi mượt mà khi đổi theme (tùy chọn) */
+    transition: opacity 0.5s ease;
+}
+
+/* Tùy chỉnh độ mờ cho dark theme (tùy chọn) */
+body.dark-theme #svg-container::before {
+    opacity: 0.05; /* Làm cho ảnh mờ hơn nữa trên nền tối để đỡ chói */
 }
 
 /* --- START: Styles for Overlay Buttons --- */
@@ -506,7 +544,15 @@ body {
 
 .gate { fill: var(--gate-fill); stroke: var(--gate-stroke); stroke-width: 1.2; transition: fill 0.5s ease, stroke 0.5s ease;}
 
-.data-dot { fill: var(--data-dot-fill); r: 4; visibility: hidden; transition: fill 0.5s ease;}
+.data-dot {
+    r: 4.5;
+    fill: var(--data-dot-fill);
+    stroke: var(--data-dot-stroke);
+    stroke-width: 1px;
+    visibility: hidden;
+    filter: url(#dot-glow-filter); /* Áp dụng hiệu ứng phát sáng */
+    transition: fill 0.5s ease, stroke 0.5s ease;
+}
 .control-dot { fill: var(--control-dot-fill); r: 4; visibility: hidden; transition: fill 0.5s ease;}
 
 .highlighted {
@@ -715,5 +761,41 @@ body {
 }
 
 /* --- END: Active Path Highlighting Styles --- */
+
+/* --- ACTIVE LINE NUMBER STYLING --- */
+
+.active-line-number {
+    font-weight: 700 !important; /* In đậm */
+    color: #e63946 !important; /* Màu đỏ rực rỡ (từ light theme) */
+    transform: scale(1.1); /* Hơi phóng to để thu hút chú ý */
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Style cho dark theme */
+body.dark-theme .active-line-number {
+    color: #ff5555 !important; /* Màu đỏ tươi trên nền tối */
+}
+
+.line-numbers > span.active-line-number {
+    font-weight: 700 !important; /* Dùng 700 thay vì 'bold' để rõ ràng hơn */
+    
+    /* Sử dụng màu sáng hơn, dễ nhận biết hơn cho cả hai theme */
+    color: #D32F2F !important; /* Màu đỏ đậm cho light theme */
+    
+    transform: scale(1.15); /* Tăng nhẹ độ phóng to */
+    background-color: rgba(255, 204, 0, 0.2); /* Thêm một lớp nền mờ màu vàng */
+    border-radius: 3px;
+    
+    /* Thêm transition mượt mà hơn */
+    transition: color 0.2s ease-in-out, 
+                transform 0.2s ease-in-out, 
+                background-color 0.2s ease-in-out;
+}
+
+/* Style riêng cho Dark Theme */
+body.dark-theme .line-numbers > span.active-line-number {
+    color: #FF5252 !important; /* Màu đỏ tươi cho dark theme */
+    background-color: rgba(255, 193, 7, 0.15); /* Nền vàng mờ trên nền tối */
+}
 
 /* --- END OF FILE sub_general.css --- */
