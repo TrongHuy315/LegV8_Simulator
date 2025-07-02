@@ -323,6 +323,7 @@ window.addEventListener('load', () => {
             utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
             utilUI.hideAllDots(svg);
             pathHighlighter.resetHighlights();
+            utilUI.turnOffAllLights(svg);
             utilUI.resetLogicBit();
             registers.fill(0);  
             memory.fill(0); 
@@ -370,6 +371,7 @@ window.addEventListener('load', () => {
                 utilUI.hideAllDots(svg);
                 pathHighlighter.resetHighlights();
                 utilUI.resetLogicBit();
+                utilUI.turnOffAllLights(svg);
                 
                 let result = format.parseFormatInstruction(instructionText);
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    

@@ -51,14 +51,13 @@ export function hideAllDots(svg) {
 
 // Hàm hủy tất cả các timeout đang chờ (khi reset)
 export function cancelAllPendingTimeouts(activeTimeouts, runningAnimations) {
-     const keys = Object.keys(activeTimeouts);
-     if (keys.length > 0) {
-        keys.forEach(animId => {
-            clearTimeout(activeTimeouts[animId]);
-        });
-     }
+     for (const key in activeTimeouts) {
+        clearTimeout(activeTimeouts[key].id);
+        delete activeTimeouts[key];
+    }
     activeTimeouts = {}; // Reset đối tượng lưu timeout
     runningAnimations.clear(); // Reset tập anim đang chạy
+    // hideAllDots(svg)
 }
 
 // Remove All Highlights Function **** ---
@@ -191,7 +190,14 @@ export function calculateGraph(opcode, branch = false) {
     }
     return instructionGraph;
 }
-
+export function turnOffAllLights(svg) {
+    if (!svg) return;
+    // Select all elements whose id starts with "lightCircle-"
+    const lights = svg.querySelectorAll('[id^="lightCircle-"]');
+    lights.forEach(light => {
+        light.setAttribute('visibility', 'hidden');
+    });
+}
 let additionComponent = ["flags", "data-memory", "alu-control", "alu"];
 export function calRequirements(opcode) {
     let requirements = structuredClone(setting.componentInputRequirements);
