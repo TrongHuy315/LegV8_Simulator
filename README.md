@@ -1,5 +1,11 @@
 # LEGv8 Simulator
 
+## Demo & Bio
+
+- [Project GitHub Bio & Demo](https://tronghuy315.github.io/LegV8_Simulator/)
+
+---
+
 ## Overview
 
 This project is a **LEGv8 Simulator** designed to help users learn and visualize the execution of LEGv8 assembly instructions. The simulator provides an interactive interface for entering, editing, and simulating LEGv8 code, complete with animated data paths, register/memory views, and step-by-step execution.
@@ -54,12 +60,6 @@ This project is a **LEGv8 Simulator** designed to help users learn and visualize
 
 - Modern web browser (Chrome, Firefox, Edge, etc.)
 - No installation required; simply open the `index.html` file in your browser.
-
----
-
-## Demo & Bio
-
-- [Project GitHub Bio & Demo](https://tronghuy315.github.io/LegV8_Simulator/)
 
 ---
 
