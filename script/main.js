@@ -6,7 +6,7 @@ import * as fullScreen from '../UI/fullscreen.js'
 import * as editor from './editor.js'
 import * as regmemtable from '../UI/reg_mem_table.js'
 import * as pathHighlighter from './pathHighlighter.js'
-import * as animationControl from '../UI/animation_control.js'
+// import * as animationControl from '../UI/animation_control.js'
 import * as speedControl from '../UI/speedControl.js'
 import {setTextById} from '../UI/logic_bit_set.js'
 
@@ -23,7 +23,7 @@ const registerTableContainer = document.getElementById('register-table-container
 const memoryTableContainer = document.getElementById('memory-table-container');
 const dataDisplayContainer = document.getElementById('data-display-container');
 
-const pauseResumeButton = document.getElementById('pause-resume-button');
+// const pauseResumeButton = document.getElementById('pause-resume-button');
 const speedSlider = document.getElementById('speed-slider'); 
 const speedMultipliers = [0.25, 0.5, 1, 2, 4];
 
@@ -83,11 +83,12 @@ function parseDuration(durationString) {
 }
 
 function triggerAnimation(animId, graph, opcode) {
+    console.log(runningAnimations);
     return new Promise((resolve, reject) => {
-        if (animationControl.getIsPaused()) {
-            resolve();
-            return;
-        }
+        // if (animationControl.getIsPaused()) {
+        //     resolve();
+        //     return;
+        // }
 
         // Nếu không có đồ thị, không có dữ liệu animation, hoặc animation đã chạy, bỏ qua.
         if (!graph || !graph[animId] || runningAnimations.has(animId)) {
@@ -248,7 +249,7 @@ async function simulateStep(parsedInstruction) {
     // lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
     // let result = format.parseFormatInstruction(instruction);
     // let parsedInstruction = utilUI.calparseFormatInstruction(result);
-    console.log(parsedInstruction, label);
+    // console.log(parsedInstruction, label);
     if (label != null) {
         if (!parsedInstruction?.label) return;
         if (parsedInstruction.label != label) return;
@@ -317,8 +318,13 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
+            console.log("restart");
             editor.clearActiveLine();
-            registers.fill(0); 
+            utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
+            utilUI.hideAllDots(svg);
+            pathHighlighter.resetHighlights();
+            utilUI.resetLogicBit();
+            registers.fill(0);  
             memory.fill(0); 
             let stack = [];
             componentInputCounter = {};
@@ -456,19 +462,19 @@ window.addEventListener('load', () => {
             memoryTableContainer,
         );
 
-        if (pauseResumeButton) {
-            pauseResumeButton.addEventListener('click', () => {
-                if (animationControl.getIsPaused()) {
-                    animationControl.resume(svg, activeTimeouts);
-                    pauseResumeButton.innerHTML = '⏸️'; // Icon Pause
-                    pauseResumeButton.title = 'Pause Animation (P)';
-                } else {
-                    animationControl.pause(svg, activeTimeouts);
-                    pauseResumeButton.innerHTML = '▶️'; // Icon Play/Resume
-                    pauseResumeButton.title = 'Resume Animation (P)';
-                }
-            });
-        }
+        // if (pauseResumeButton) {
+        //     pauseResumeButton.addEventListener('click', () => {
+        //         if (animationControl.getIsPaused()) {
+        //             animationControl.resume(svg, activeTimeouts);
+        //             pauseResumeButton.innerHTML = '⏸️'; // Icon Pause
+        //             pauseResumeButton.title = 'Pause Animation (P)';
+        //         } else {
+        //             animationControl.pause(svg, activeTimeouts);
+        //             pauseResumeButton.innerHTML = '▶️'; // Icon Play/Resume
+        //             pauseResumeButton.title = 'Resume Animation (P)';
+        //         }
+        //     });
+        // }
     }
 
     if (svg) {
@@ -491,10 +497,10 @@ window.addEventListener('load', () => {
         if ((event.key === 'p' || event.key === 'P') && event.target.tagName !== 'TEXTAREA') {
             event.preventDefault();
             // Kích hoạt sự kiện click trên nút để dùng chung logic
-            pauseResumeButton.click();
+            // pauseResumeButton.click();
         }
     });
-    console.log("Global event listeners initialized.");
+    // console.log("Global event listeners initialized.");
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -506,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Kiểm tra xem người dùng có chọn file nào không
         if (files.length === 0) {
-            console.log('No file selected.');
+            // console.log('No file selected.');
             return;
         }
 
