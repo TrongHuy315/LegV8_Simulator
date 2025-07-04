@@ -33,7 +33,7 @@ let runningAnimations = new Set(); // Theo dõi các anim đang chạy (ID của
 
 // Register storage (if not already declared)
 export let registers = Array(32).fill(0); // 32 registers, all initialized to 0
-export let memory = Array(1000).fill(0); 
+export let memory = Array(32).fill(0); 
 let address = Array(1000).fill(0);
 let componentInputCounter = {};
 
@@ -57,9 +57,11 @@ let displayState = {
 
 function executeFormat(parsedInstruction) {
     if (!parsedInstruction || parsedInstruction.error) return;
+    console.log(parsedInstruction.opcode);
     for (let formatKey in format.FORMAT_OPCODES) {
         const formats = format.FORMAT_OPCODES[formatKey];
         if (formats.opcode.includes(parsedInstruction.opcode)) {
+            console.log("Opcode: ", parsedInstruction.opcode);
             formats.update(parsedInstruction, registers, memory);
             break;
         }
@@ -83,7 +85,7 @@ function parseDuration(durationString) {
 }
 
 function triggerAnimation(animId, graph, opcode) {
-    console.log(runningAnimations);
+    // console.log(runningAnimations);
     return new Promise((resolve, reject) => {
         // if (animationControl.getIsPaused()) {
         //     resolve();
@@ -290,7 +292,7 @@ async function simulateStep(parsedInstruction) {
     }
     else if (opcode === 'B' || opcode == 'BL') {
         label = parsedInstruction.label;
-        console.log("Branc and Link: ", label);
+        // console.log("Branc and Link: ", label);
     }
     let instructionGraph = utilUI.calculateGraph(opcode, branch);
     if (instructionGraph && initialAnims.length > 0) {
@@ -318,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('load', () => {
     if(simulateButton) {
         simulateButton.addEventListener('click', async () => {
-            console.log("restart");
+            // console.log("restart");
             editor.clearActiveLine();
             utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
             utilUI.hideAllDots(svg);

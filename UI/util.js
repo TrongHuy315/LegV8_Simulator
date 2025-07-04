@@ -211,7 +211,7 @@ export function calRequirements(opcode) {
         opcode === 'ORRI' || opcode === 'EORI' || opcode === 'ANDI'
     ) {
         cnt = [1, 999, 2, 3];
-        console.log("cnt: ", cnt);
+        // console.log("cnt: ", cnt);
     }
     else if (opcode === 'ADDS' || opcode === 'SUBS') {
         cnt = [2, 999, 2, 3];

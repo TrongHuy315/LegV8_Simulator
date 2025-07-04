@@ -26,17 +26,53 @@ export function RFormat(parsedInstruction, registers, memory) {
             break;
     }
 }
-
+let map_address = {
+    "0x7fffffff08" : 0,
+    "0x7fffffff88" : 16,
+    "0x7fffffff10" : 1,
+    "0x7fffffff90" : 17,
+    "0x7fffffff18" : 2,
+    "0x7fffffff98" : 18,
+    "0x7fffffff20" : 3,
+    "0x7fffffffa0" : 19,
+    "0x7fffffff28" : 4,
+    "0x7fffffffa8" : 20,
+    "0x7fffffff30" : 5,
+    "0x7fffffffb0" : 21,
+    "0x7fffffff38" : 6,
+    "0x7fffffffb8" : 22,
+    "0x7fffffff40" : 7,
+    "0x7fffffffc0" : 23,
+    "0x7fffffff48" : 8,
+    "0x7fffffffc8" : 24,
+    "0x7fffffff50" : 9,
+    "0x7fffffffd0" : 25,
+    "0x7fffffff58" : 10,
+    "0x7fffffffd8" : 16,
+    "0x7fffffff60" : 11,
+    "0x7fffffffe0" : 27,
+    "0x7fffffff68" : 12,
+    "0x7fffffffe8" : 28,
+    "0x7fffffff70" : 13, 
+    "0x7ffffffff0" : 29,
+    "0x7fffffff78" : 14, 
+    "0x7ffffffff8" : 30,
+    "0x7fffffff80" : 15,
+    "0x8000000000" : 31
+};
 export function DFormat(parsedInstruction, registers, memory) {
-    const { opcode, rd, rn, offset } = parsedInstruction;
+    const { opcode, rt, rn, offset } = parsedInstruction;
+    console.log(parsedInstruction);
     const address = registers[rn] + Number(offset);
-
+    console.log("Adress:", map_address["0x" + address.toString(16)]); 
+    // address = 0;
     switch (opcode) {
         case 'LDUR':
             registers[rd] = memory[address] || 0;
             break;
         case 'STUR':
-            memory[address] = registers[rd];
+            console.log("register: ", registers[rt]);
+            memory[map_address["0x" + address.toString(16)]] = registers[rt];
             break;
         default:
             break;

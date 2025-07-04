@@ -1,4 +1,4 @@
-export const D_FORMAT_OPCODES = ['LDUR', 'SDUR']
+export const D_FORMAT_OPCODES = ['LDUR', 'STUR']
 export function convert(line, dFormaxRegex) {
     let match = line.match(dFormaxRegex);
     const opcode = match[1].toUpperCase(); 

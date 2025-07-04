@@ -59,7 +59,7 @@ export function renderMemoryView(container, displayState) {
             const address = `0x${(endAddress - index * 8).toString(16).padStart(10, '0')}`;
             const memIndex = memory.length - 1 - index;
             const value = (memIndex >= 0) ? memory[memIndex] : 0;
-
+            // console.log(address, memIndex, value);
             const displayValue = displayState.memoryFormat === 'hex'
                 ? `0x${value.toString(16)}` // Ensure 8 digits
                 : value.toString(10);
