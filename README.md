@@ -65,7 +65,7 @@ This project is a **LEGv8 Simulator** designed to help users learn and visualize
 
 ## Credits
 
-- Developed by [Your Name/Team]
+- Developed by Dang Thanh Long - Do Trong Huy
 - Inspired by LEGv8 educational resources and ARM architecture documentation.
 
 ---
