@@ -68,7 +68,7 @@ export function DFormat(parsedInstruction, registers, memory) {
     // address = 0;
     switch (opcode) {
         case 'LDUR':
-            registers[rd] = memory[address] || 0;
+            registers[rt] = memory[map_address["0x" + address.toString(16)]] || 0;
             break;
         case 'STUR':
             console.log("register: ", registers[rt]);
