@@ -247,6 +247,7 @@ function triggerAnimation(animId, graph, opcode) {
 
 let label = null;
 async function simulateStep(parsedInstruction) {
+    console.log(parsedInstruction);
     // const lightCircles = document.querySelectorAll('[id^="lightCircle-"]');
     // lightCircles.forEach(circle => circle.setAttribute('visibility', 'hidden'));
     // let result = format.parseFormatInstruction(instruction);
@@ -279,10 +280,12 @@ async function simulateStep(parsedInstruction) {
     let opcode = parsedInstruction.opcode;
     let branch = false;
     if (opcode === 'CBZ') {
+        console.log(registers[+parsedInstruction.rt]);
         if (registers[+parsedInstruction.rt] == 0) {
             branch = true;
             label = parsedInstruction.label;
         }
+        console.log("label: ", label);
     }
     else if (opcode === 'CBNZ') {
         if (registers[+parsedInstruction.rt] != 0) {
@@ -349,13 +352,24 @@ window.addEventListener('load', () => {
                     const trimmed = item.text.trim();
                     // Lọc bỏ comment, dòng trống, và dòng chỉ chứa label
                     return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('#') && !trimmed.endsWith(':');
-                });
+            });
 
             const labelMap = new Map();
+            // allFormattedLines.forEach((line, index) => {
+            //     const trimmedLine = line.trim();
+            //     console.log("trimline: ", trimmedLine);
+            //     if (trimmedLine.endsWith(':')) {
+            //         console.log("ok");
+            //         const labelName = trimmedLine.slice(0, -1).trim().toUpperCase();
+            //         console.log(labelName);
+            //         labelMap.set(labelName, index);
+            //     }
+            // });
+            const labelRegex = /^([a-zA-Z_][a-zA-Z0-9_]*):/;
             allFormattedLines.forEach((line, index) => {
-                const trimmedLine = line.trim();
-                if (trimmedLine.endsWith(':')) {
-                    const labelName = trimmedLine.slice(0, -1).trim().toUpperCase();
+                const match = line.match(labelRegex);
+                if (match) {
+                    const labelName = match[1].trim().toUpperCase();
                     labelMap.set(labelName, index);
                 }
             });
@@ -368,7 +382,7 @@ window.addEventListener('load', () => {
                 let lineIndexToHighlight = currentInstruction.originalIndex;
 
                 editor.setActiveLine(lineIndexToHighlight);
-
+                
                 utilUI.cancelAllPendingTimeouts(activeTimeouts, runningAnimations);
                 utilUI.hideAllDots(svg);
                 pathHighlighter.resetHighlights();
@@ -379,12 +393,15 @@ window.addEventListener('load', () => {
                 let parsedInstruction = utilUI.calparseFormatInstruction(result);    
                 
                 await simulateStep(parsedInstruction);
-
+                console.log("register: ", registers);
+                console.log("label1: ", label);
                 // ----- Xử lý logic nhảy (Branching) -----
                 if (label != null) { 
                     const targetLineIndex = labelMap.get(label.toUpperCase());
+                    console.log(labelMap);
                     if (targetLineIndex !== undefined) {
                         const nextI = instructionsToRun.findIndex(item => item.originalIndex >= targetLineIndex);
+                        console.log(nextI);
                         if (nextI !== -1) {
                             i = nextI - 1;
                         } else {
